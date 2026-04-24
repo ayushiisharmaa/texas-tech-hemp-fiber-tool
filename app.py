@@ -11,7 +11,20 @@ from sqlalchemy import create_engine, text
 
 from ingest import archive_uploaded_file, detect_workbook_type, ingest_workbook
 
-DB_DSN = "postgresql+psycopg://hemp_user:hemp_pass@localhost:5433/hemp_db"
+import os
+from sqlalchemy import create_engine
+
+DB_DSN = os.environ.get(
+    "postgresql://hemp_db_user:ZJ0JQ5sAwYotV87VH7KRiA9JGExV3RLM@dpg-d7ltttu8bjmc73ftklu0-a/hemp_db",
+    "postgresql+psycopg://hemp_user:hemp_pass@localhost:5433/hemp_db"
+)
+
+if DB_DSN.startswith("postgres://"):
+    DB_DSN = DB_DSN.replace("postgres://", "postgresql://", 1)
+
+if DB_DSN.startswith("postgresql://"):
+    DB_DSN = DB_DSN.replace("postgresql://", "postgresql+psycopg://", 1)
+
 engine = create_engine(DB_DSN, future=True)
 
 app = FastAPI(title="Hemp Fiber Data Portal")
