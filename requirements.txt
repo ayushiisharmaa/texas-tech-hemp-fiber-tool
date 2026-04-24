@@ -4,7 +4,6 @@ anyio==4.12.1
 click==8.3.1
 et_xmlfile==2.0.0
 fastapi==0.135.1
-GDAL==3.11.4
 gunicorn==25.3.0
 h11==0.16.0
 idna==3.11
