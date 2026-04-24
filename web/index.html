@@ -1,0 +1,3724 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fiber Intelligence Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --maroon: #5a1618;
+      --maroon-deep: #3e0e10;
+      --maroon-soft: #7b2a2d;
+      --gold: #d7b15a;
+      --gold-soft: #f1e1bc;
+      --olive: #667d6a;
+      --ink: #1e293b;
+      --muted: #667085;
+      --paper: #f6efdf;
+      --panel: rgba(255, 251, 243, 0.92);
+      --panel-strong: rgba(255, 253, 249, 0.98);
+      --line: rgba(73, 39, 23, 0.12);
+      --line-strong: rgba(73, 39, 23, 0.2);
+      --success: #2d7c59;
+      --warning: #a06a0d;
+      --danger: #a63b3f;
+      --shadow: 0 20px 45px rgba(78, 42, 18, 0.12);
+      --shadow-strong: 0 24px 60px rgba(64, 13, 16, 0.16);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    html[data-theme="dark"] {
+      --ink: #f7efe5;
+      --muted: #cabeb1;
+      --paper: #140d0f;
+      --panel: rgba(33, 22, 24, 0.9);
+      --panel-strong: rgba(28, 18, 20, 0.98);
+      --line: rgba(241, 225, 188, 0.12);
+      --line-strong: rgba(241, 225, 188, 0.2);
+      --shadow: 0 24px 56px rgba(0, 0, 0, 0.34);
+      --shadow-strong: 0 28px 64px rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      color: var(--ink);
+      font-family: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif;
+      background:
+        radial-gradient(circle at top left, rgba(215, 177, 90, 0.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(102, 125, 106, 0.12), transparent 18%),
+        linear-gradient(180deg, #fbf6e9 0%, var(--paper) 58%, #efe4cb 100%);
+    }
+
+    html[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(215, 177, 90, 0.08), transparent 22%),
+        radial-gradient(circle at top right, rgba(102, 125, 106, 0.08), transparent 18%),
+        linear-gradient(180deg, #170d10 0%, var(--paper) 58%, #1a1114 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .layout {
+      --sidebar-width: 292px;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .layout::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--sidebar-width);
+      background:
+        radial-gradient(circle at top left, rgba(215, 177, 90, 0.14), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(215, 177, 90, 0.08), transparent 22%),
+        linear-gradient(180deg, var(--maroon) 0%, var(--maroon-deep) 100%);
+      pointer-events: none;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 28px 22px;
+      color: #fff8f0;
+      background: transparent;
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      z-index: 1;
+    }
+
+    .sidebar::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      bottom: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(215, 177, 90, 0.24), transparent 66%);
+      pointer-events: none;
+    }
+
+    .brand {
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-kicker,
+    .nav-label {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.74rem;
+      color: rgba(255, 248, 240, 0.56);
+      font-weight: 700;
+    }
+
+    .brand h1 {
+      margin: 10px 0 14px;
+      font-size: clamp(2rem, 3.1vw, 3rem);
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      text-wrap: balance;
+    }
+
+    .brand p {
+      margin: 0;
+      color: rgba(255, 248, 240, 0.82);
+      font-size: 0.96rem;
+      line-height: 1.55;
+      max-width: 18rem;
+    }
+
+    .nav-section {
+      display: grid;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-item {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.07);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-weight: 700;
+    }
+
+    .nav-item:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item.active {
+      color: var(--maroon-deep);
+      background: linear-gradient(135deg, #fff8ed, var(--gold-soft));
+      border-color: transparent;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .sidebar-spacer {
+      flex: 1;
+    }
+
+    .sidebar-footer {
+      display: grid;
+      gap: 12px;
+      position: relative;
+      margin-top: auto;
+      padding-top: 18px;
+      padding-bottom: 4px;
+      z-index: 1;
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(62, 14, 16, 0), rgba(62, 14, 16, 0.92) 18%, rgba(62, 14, 16, 1) 100%);
+    }
+
+    .footer-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.06));
+    }
+
+    .footer-title {
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 248, 240, 0.6);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .footer-copy {
+      line-height: 1.5;
+      color: rgba(255, 248, 240, 0.88);
+      font-size: 0.95rem;
+    }
+
+    .upload-cta {
+      width: 100%;
+      padding: 15px 18px;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), #e4c785);
+      color: var(--maroon-deep);
+      font-weight: 800;
+      box-shadow: var(--shadow-strong);
+    }
+
+    .upload-cta:hover {
+      transform: translateY(-1px);
+    }
+
+    .footer-hint {
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: rgba(255, 248, 240, 0.7);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 30px clamp(20px, 2vw, 34px) 34px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--olive);
+    }
+
+    .topbar h1 {
+      margin: 8px 0 10px;
+      font-size: clamp(2.2rem, 5vw, 4.6rem);
+      line-height: 0.92;
+      max-width: 920px;
+      text-wrap: balance;
+      letter-spacing: -0.045em;
+    }
+
+    .topbar p {
+      margin: 0;
+      max-width: 900px;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 1rem;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .timestamp-pill,
+    .status-pill,
+    .mini-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.5);
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status-pill.success,
+    .mini-pill.success {
+      color: var(--success);
+      background: rgba(45, 124, 89, 0.09);
+      border-color: rgba(45, 124, 89, 0.18);
+    }
+
+    .status-pill.warning,
+    .mini-pill.warning {
+      color: var(--warning);
+      background: rgba(160, 106, 13, 0.09);
+      border-color: rgba(160, 106, 13, 0.18);
+    }
+
+    .status-pill.danger,
+    .mini-pill.danger {
+      color: var(--danger);
+      background: rgba(166, 59, 63, 0.09);
+      border-color: rgba(166, 59, 63, 0.18);
+    }
+
+    .ghost-button,
+    .secondary-button,
+    .primary-button,
+    .segment-button {
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .ghost-button,
+    .secondary-button,
+    .segment-button {
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+    }
+
+    .primary-button {
+      border: none;
+      background: linear-gradient(135deg, var(--maroon), var(--maroon-deep));
+      color: #fff8ef;
+      box-shadow: var(--shadow-strong);
+    }
+
+    .ghost-button:hover,
+    .secondary-button:hover,
+    .primary-button:hover,
+    .segment-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle {
+      width: 56px;
+      height: 56px;
+      padding: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle-icon {
+      display: none;
+      width: 22px;
+      height: 22px;
+      color: var(--ink);
+    }
+
+    .theme-toggle-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    html[data-theme="light"] .theme-toggle-moon,
+    html[data-theme="dark"] .theme-toggle-sun {
+      display: block;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .page {
+      display: none;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .page.active {
+      display: grid;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 22px 24px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--maroon), var(--gold));
+      opacity: 0.95;
+    }
+
+    .panel.compact::before,
+    .panel.subtle::before {
+      display: none;
+    }
+
+    .panel.compact {
+      padding: 20px 22px;
+    }
+
+    .panel.subtle {
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .panel-head.split {
+      align-items: center;
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0 0 6px;
+      line-height: 1.05;
+    }
+
+    .panel-head p,
+    .panel > p,
+    .support-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .section-kicker {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--olive);
+      margin-bottom: 10px;
+    }
+
+    .hero-strip {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .hero-strip h2,
+    .instrument-hero h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+      line-height: 1;
+    }
+
+    .hero-actions,
+    .filter-actions,
+    .table-footer,
+    .builder-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .kpi-card {
+      min-width: 0;
+      padding: 20px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--maroon), var(--gold));
+    }
+
+    .kpi-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .kpi-value {
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .kpi-note {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .instrument-hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+
+    .filter-field {
+      min-width: 0;
+    }
+
+    .filter-field[hidden] {
+      display: none;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .text-input,
+    .select-input {
+      width: 100%;
+      min-width: 0;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--ink);
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    .text-input:focus,
+    .select-input:focus {
+      border-color: rgba(90, 22, 24, 0.38);
+      box-shadow: 0 0 0 4px rgba(90, 22, 24, 0.08);
+    }
+
+    .filter-note {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .segmented {
+      display: inline-flex;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.5);
+      width: fit-content;
+      max-width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .segment-button.active {
+      background: linear-gradient(135deg, var(--maroon), var(--maroon-deep));
+      color: #fff8ef;
+      border-color: transparent;
+      box-shadow: var(--shadow-strong);
+    }
+
+    .tab-view {
+      display: none;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .tab-view.active {
+      display: grid;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      min-width: 0;
+      max-height: 520px;
+    }
+
+    .table-scroll-shell {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .table-scroll-hint {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .table-scroll-hint::after {
+      content: "Scroll horizontally to see more →";
+      white-space: nowrap;
+      color: var(--olive);
+      font-weight: 700;
+    }
+
+    .table-wrap.wide-table {
+      overflow-x: auto;
+      overflow-y: auto;
+      scrollbar-gutter: stable both-edges;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 840px;
+      background: var(--panel-strong);
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      font-size: 0.94rem;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--panel-strong);
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    th.sortable {
+      cursor: pointer;
+    }
+
+    tbody tr {
+      transition: 0.16s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(90, 22, 24, 0.04);
+    }
+
+    tbody tr.is-selected {
+      background: rgba(215, 177, 90, 0.12);
+    }
+
+    .table-summary,
+    .pagination-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .empty-state {
+      padding: 30px 18px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .empty-state.small {
+      padding: 18px 12px;
+    }
+
+    .stack-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .summary-card h4 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .summary-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .alert-list,
+    .timeline-list,
+    .workflow-list,
+    .flag-list,
+    .microcopy-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .alert-item,
+    .timeline-item,
+    .workflow-step,
+    .flag-item,
+    .microcopy-item {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .alert-item strong,
+    .timeline-item strong,
+    .workflow-step strong,
+    .flag-item strong,
+    .microcopy-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .timeline-meta,
+    .microcopy-item span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .builder-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .builder-step {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.48);
+    }
+
+    .step-index {
+      display: inline-flex;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(215, 177, 90, 0.18);
+      color: var(--maroon);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .builder-step h3 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .portfolio-grid,
+    .guide-grid,
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .portfolio-card,
+    .guide-card,
+    .shortcut-card {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.36)),
+        radial-gradient(circle at top right, rgba(215, 177, 90, 0.16), transparent 42%);
+      box-shadow: var(--shadow);
+    }
+
+    html[data-theme="dark"] .portfolio-card,
+    html[data-theme="dark"] .guide-card,
+    html[data-theme="dark"] .shortcut-card {
+      background:
+        linear-gradient(180deg, rgba(45, 30, 33, 0.92), rgba(28, 18, 20, 0.86)),
+        radial-gradient(circle at top right, rgba(215, 177, 90, 0.08), transparent 42%);
+    }
+
+    .portfolio-head,
+    .guide-head {
+      display: grid;
+      gap: 8px;
+    }
+
+    .portfolio-head h4,
+    .guide-head h4 {
+      margin: 0;
+      font-size: 1.12rem;
+    }
+
+    .portfolio-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .portfolio-stat,
+    .fit-stat {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.44);
+      min-width: 0;
+    }
+
+    html[data-theme="dark"] .portfolio-stat,
+    html[data-theme="dark"] .fit-stat {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .portfolio-stat-label,
+    .fit-stat-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .portfolio-stat-value,
+    .fit-stat-value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .portfolio-actions,
+    .guide-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .guide-list,
+    .guide-step-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .guide-item,
+    .guide-step {
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.4);
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    html[data-theme="dark"] .guide-item,
+    html[data-theme="dark"] .guide-step {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .guide-item strong,
+    .guide-step strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .fit-panel {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .fit-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .fit-copy {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .fit-badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .builder-note {
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(160, 106, 13, 0.18);
+      background: rgba(160, 106, 13, 0.08);
+      color: #7f5609;
+      line-height: 1.5;
+    }
+
+    html[data-theme="dark"] .builder-note {
+      color: #f5d38d;
+      background: rgba(160, 106, 13, 0.12);
+    }
+
+    .chart-shell {
+      min-height: 360px;
+    }
+
+    .chart-shell canvas {
+      width: 100%;
+      height: 320px;
+    }
+
+    .detail-metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .detail-metric {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid var(--line);
+    }
+
+    .detail-metric-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .detail-metric-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(23, 13, 16, 0.54);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .upload-modal {
+      width: min(1120px, 100%);
+      max-height: min(92vh, 980px);
+      overflow: auto;
+      padding: 22px;
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      box-shadow: var(--shadow-strong);
+      display: grid;
+      gap: 18px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 18px;
+    }
+
+    .dropzone {
+      display: grid;
+      gap: 14px;
+      align-content: center;
+      min-height: 300px;
+      padding: 28px;
+      border-radius: 24px;
+      border: 2px dashed rgba(90, 22, 24, 0.22);
+      background: linear-gradient(135deg, rgba(215, 177, 90, 0.18), rgba(255, 255, 255, 0.62));
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .dropzone.dragging {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .dropzone input {
+      display: none;
+    }
+
+    .dropzone h3 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .upload-legal {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .upload-stage-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .upload-stage {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .upload-stage-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 2px solid var(--line-strong);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .upload-stage.active .upload-stage-dot {
+      border-color: var(--maroon);
+      background: var(--maroon);
+    }
+
+    .upload-stage.done .upload-stage-dot {
+      border-color: var(--success);
+      background: var(--success);
+    }
+
+    .upload-stage-title {
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .upload-status-text {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .impact-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.46);
+    }
+
+    .impact-card h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .impact-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1320px) {
+      .layout {
+        --sidebar-width: 276px;
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      }
+
+      .compare-grid,
+      .two-col,
+      .modal-grid,
+      .builder-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .layout::before {
+        display: none;
+      }
+
+      .sidebar {
+        position: relative;
+        top: auto;
+        align-self: stretch;
+        height: auto;
+        overflow-y: visible;
+        gap: 16px;
+      }
+
+      .sidebar-footer {
+        position: relative;
+        bottom: auto;
+        margin-top: 4px;
+        background: none;
+      }
+
+      .filter-row,
+      .builder-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .main {
+        padding: 18px;
+      }
+
+      .topbar {
+        flex-direction: column;
+      }
+
+      .hero-strip,
+      .instrument-hero,
+      .panel-head.split {
+        flex-direction: column;
+      }
+
+      .filter-row,
+      .builder-grid,
+      .portfolio-stats,
+      .detail-metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-footer,
+      .filter-actions,
+      .builder-actions,
+      .topbar-actions,
+      .hero-actions,
+      .portfolio-actions,
+      .guide-actions {
+        width: 100%;
+      }
+
+      .primary-button,
+      .secondary-button,
+      .ghost-button,
+      .upload-cta {
+        width: 100%;
+      }
+
+      .segment-button {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-kicker">Hemp Analytics</div>
+        <h1>Fiber Intelligence Portal</h1>
+        <p>Centralize workbook intake, instrument review, and cross-instrument analysis for hemp fiber diameter, width, and single-fiber mechanical measurements.</p>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Workspace</div>
+        <div class="nav-list">
+          <button class="nav-item active" data-page="overview">Overview</button>
+          <button class="nav-item" data-page="guide">Guide</button>
+          <button class="nav-item" data-page="compare">Compare Instruments</button>
+          <button class="nav-item" data-page="history">Ingest History</button>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Instruments</div>
+        <div class="nav-list">
+          <button class="nav-item" data-page="instrument" data-instrument="ofda">OFDA</button>
+          <button class="nav-item" data-page="instrument" data-instrument="cottonscope">Cottonscope</button>
+          <button class="nav-item" data-page="instrument" data-instrument="favimat">FAVIMAT</button>
+        </div>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <div class="footer-card">
+          <div class="footer-title">Latest ingest</div>
+          <div class="footer-copy" id="sidebarLatestIngest">Loading the most recent workbook activity...</div>
+        </div>
+        <button class="upload-cta" id="openUploadButton">Upload Data</button>
+        <div class="footer-hint">Use the global uploader to append new workbooks, refresh derived summaries, and preserve a clean audit trail of what entered the study database.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="pageEyebrow">Decision Support Workspace</div>
+          <h1 id="pageTitle">Fiber Intelligence Portal</h1>
+          <p id="pageSubtitle">Review newly ingested workbooks, inspect instrument-specific cohorts, and identify quality or disagreement signals before drawing analytical conclusions.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="timestamp-pill" id="lastUpdatedPill">Awaiting first analytics refresh</div>
+          <button class="ghost-button theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">
+            <span class="theme-toggle-icon theme-toggle-sun" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4.5"></circle>
+                <path d="M12 2.5v3"></path>
+                <path d="M12 18.5v3"></path>
+                <path d="M2.5 12h3"></path>
+                <path d="M18.5 12h3"></path>
+                <path d="M5.4 5.4l2.2 2.2"></path>
+                <path d="M16.4 16.4l2.2 2.2"></path>
+                <path d="M18.6 5.4l-2.2 2.2"></path>
+                <path d="M7.6 16.4l-2.2 2.2"></path>
+              </svg>
+            </span>
+            <span class="theme-toggle-icon theme-toggle-moon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 14.2A8.7 8.7 0 0 1 9.8 4a9 9 0 1 0 10.2 10.2Z"></path>
+              </svg>
+            </span>
+            <span class="sr-only">Toggle color theme</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="page active" id="overviewPage">
+        <div class="panel hero-strip">
+          <div>
+            <div class="section-kicker">Overview</div>
+            <h2>Quick look across all three instruments</h2>
+            <p class="support-copy">Start here to see the broad analytical picture across OFDA, Cottonscope, and FAVIMAT before you open any individual workspace. This page is the simplest place to confirm what is loaded, what looks healthy, and where deeper review is worth your time.</p>
+          </div>
+
+          <div class="hero-actions">
+            <button class="secondary-button" id="overviewGuideAction">Open Guide</button>
+            <button class="primary-button" id="overviewCompareAction">Open Comparison Lab</button>
+            <button class="secondary-button" id="overviewUploadAction">Upload Workbook</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="overviewKpis"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Portfolio analysis hub</h3>
+              <p>Each card below summarizes one instrument at a glance so the team can compare coverage, health, and primary signals in one place, then branch into the deeper workspace that matters next.</p>
+            </div>
+          </div>
+          <div class="portfolio-grid" id="overviewPortfolioGrid"></div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Current signals</h3>
+                <p>These alerts summarize missingness, outlier burden, and cross-instrument fit so the team can prioritize follow-up analysis efficiently.</p>
+              </div>
+            </div>
+            <div class="alert-list" id="overviewAlerts"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Recent ingest activity</h3>
+                <p>Review the most recent workbook sheets loaded into PostgreSQL to verify when new measurements entered the database and how much data was added.</p>
+              </div>
+            </div>
+            <div class="timeline-list" id="overviewActivity"></div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Quick routes</h3>
+                <p>Use these shortcuts when you already know the type of question you are trying to answer and want a lower-friction path through the portal.</p>
+              </div>
+            </div>
+            <div class="shortcut-grid">
+              <div class="shortcut-card">
+                <div class="guide-head">
+                  <div class="section-kicker">Need the big picture</div>
+                  <h4>Use the Guide and Overview first</h4>
+                  <div class="support-copy">Start with the portal map if someone is new to the dashboard, then return to Overview for the actual cross-instrument status summary.</div>
+                </div>
+                <div class="guide-actions">
+                  <button class="secondary-button" data-nav-target="guide">Open Guide</button>
+                  <button class="secondary-button" data-nav-target="overview">Open Overview</button>
+                </div>
+              </div>
+              <div class="shortcut-card">
+                <div class="guide-head">
+                  <div class="section-kicker">Need a deeper instrument review</div>
+                  <h4>Jump into an instrument workspace</h4>
+                  <div class="support-copy">Use the dedicated workspace when you need filters, raw rows, distributions, grouped statistics, or export for a single instrument.</div>
+                </div>
+                <div class="guide-actions">
+                  <button class="secondary-button" data-nav-target="instrument" data-nav-instrument="ofda">Open OFDA</button>
+                  <button class="secondary-button" data-nav-target="instrument" data-nav-instrument="cottonscope">Open Cottonscope</button>
+                  <button class="secondary-button" data-nav-target="instrument" data-nav-instrument="favimat">Open FAVIMAT</button>
+                </div>
+              </div>
+              <div class="shortcut-card">
+                <div class="guide-head">
+                  <div class="section-kicker">Need cross-instrument agreement</div>
+                  <h4>Open the comparison lab</h4>
+                  <div class="support-copy">Use the comparison page when you want to see how well OFDA and Cottonscope move together and review the matched samples affecting fit.</div>
+                </div>
+                <div class="guide-actions">
+                  <button class="primary-button" data-nav-target="compare">Open Compare</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Recommended workflow</h3>
+                <p>This sequence keeps the dashboard readable: orient yourself first, inspect the right workspace next, then upload or compare only when that step is actually needed.</p>
+              </div>
+            </div>
+            <div class="workflow-list">
+              <div class="workflow-step">
+                <strong>1. Start with Guide if the screen feels dense</strong>
+                Use the portal guide for a plain-English explanation of where each type of information lives and which page to open for each question.
+              </div>
+              <div class="workflow-step">
+                <strong>2. Use Overview to compare all instruments at once</strong>
+                Confirm row counts, sample coverage, key flags, and cross-instrument fit before opening a detailed workspace.
+              </div>
+              <div class="workflow-step">
+                <strong>3. Open the specific workspace you need</strong>
+                Use an instrument page for deeper filtering and tabbed analytics, or the comparison lab when OFDA and Cottonscope should be interpreted together.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="guidePage">
+        <div class="panel hero-strip">
+          <div>
+            <h2>What information lives where?</h2>
+            <p class="support-copy">This page is a plain-language map of the dashboard. Use it when you want the fastest route to a specific answer without having to decode every panel on screen.</p>
+          </div>
+
+          <div class="hero-actions">
+            <button class="secondary-button" data-nav-target="overview">Open Overview</button>
+            <button class="primary-button" data-nav-target="compare">Open Compare</button>
+          </div>
+        </div>
+
+        <div class="guide-grid">
+          <div class="guide-card">
+            <div class="guide-head">
+              <div class="section-kicker">Start here</div>
+              <h4>Overview answers “what is happening overall?”</h4>
+              <div class="support-copy">Use Overview when you want a single screen that summarizes all three instruments before diving deeper.</div>
+            </div>
+            <div class="guide-list">
+              <div class="guide-item">
+                <strong>Top KPI cards</strong>
+                Combined portfolio counts, matched comparison coverage, recent ingest activity, and the latest workbook.
+              </div>
+              <div class="guide-item">
+                <strong>Portfolio analysis hub</strong>
+                One card per instrument with row count, sample count, missingness, outlier burden, and the top analytical flag.
+              </div>
+              <div class="guide-item">
+                <strong>Current signals</strong>
+                High-level alerts that tell you where the next review effort should go.
+              </div>
+            </div>
+            <div class="guide-actions">
+              <button class="secondary-button" data-nav-target="overview">Open Overview</button>
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-head">
+              <div class="section-kicker">Deep dive</div>
+              <h4>Instrument workspaces answer “what is happening inside one instrument?”</h4>
+              <div class="support-copy">Open OFDA, Cottonscope, or FAVIMAT when you need filtering, raw rows, charts, grouped summaries, or export for a single data source.</div>
+            </div>
+            <div class="guide-list">
+              <div class="guide-item">
+                <strong>Query and filter</strong>
+                Build the cohort you want to inspect. Only relevant filters appear for each instrument.
+              </div>
+              <div class="guide-item">
+                <strong>Table tab</strong>
+                Best for raw row review, sorting, and export.
+              </div>
+              <div class="guide-item">
+                <strong>Charts and Analytics tabs</strong>
+                Best for distributions, grouped summaries, completeness, and confidence metrics.
+              </div>
+            </div>
+            <div class="guide-actions">
+              <button class="secondary-button" data-nav-target="instrument" data-nav-instrument="ofda">Open OFDA</button>
+              <button class="secondary-button" data-nav-target="instrument" data-nav-instrument="cottonscope">Open Cottonscope</button>
+              <button class="secondary-button" data-nav-target="instrument" data-nav-instrument="favimat">Open FAVIMAT</button>
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-head">
+              <div class="section-kicker">Agreement check</div>
+              <h4>Compare answers “how well do OFDA and Cottonscope track together?”</h4>
+              <div class="support-copy">Use the comparison lab when you need matched-sample alignment rather than a one-instrument-only readout.</div>
+            </div>
+            <div class="guide-list">
+              <div class="guide-item">
+                <strong>Scatter plot</strong>
+                Shows matched sample means and the fitted line so you can see whether the two instruments move together.
+              </div>
+              <div class="guide-item">
+                <strong>R<sup>2</sup> fit summary</strong>
+                Gives the headline measure of agreement your client asked for.
+              </div>
+              <div class="guide-item">
+                <strong>Ranked matched samples</strong>
+                Helps you inspect the specific samples that sit farthest from the fitted relationship or have the strongest support.
+              </div>
+            </div>
+            <div class="guide-actions">
+              <button class="primary-button" data-nav-target="compare">Open Compare</button>
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-head">
+              <div class="section-kicker">Audit trail</div>
+              <h4>History answers “what got loaded and when?”</h4>
+              <div class="support-copy">Use Ingest History when you want traceability rather than analysis.</div>
+            </div>
+            <div class="guide-list">
+              <div class="guide-item">
+                <strong>Recent ingest activity</strong>
+                Fast check of the newest workbook and sheet loads.
+              </div>
+              <div class="guide-item">
+                <strong>Latest upload impact</strong>
+                Tells you what changed after the most recent upload in the current session.
+              </div>
+              <div class="guide-item">
+                <strong>Ingest log table</strong>
+                Full audit details including file name, sheet, timestamp, and checksum.
+              </div>
+            </div>
+            <div class="guide-actions">
+              <button class="secondary-button" data-nav-target="history">Open History</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Simple decision path</h3>
+              <p>If you are unsure where to go next, follow this sequence.</p>
+            </div>
+          </div>
+          <div class="guide-step-list">
+            <div class="guide-step">
+              <strong>1. “I need the broad status of the study.”</strong>
+              Open Overview.
+            </div>
+            <div class="guide-step">
+              <strong>2. “I need to understand one instrument in depth.”</strong>
+              Open that instrument workspace and use the filters plus the Table, Charts, and Analytics tabs.
+            </div>
+            <div class="guide-step">
+              <strong>3. “I need to judge agreement between OFDA and Cottonscope.”</strong>
+              Open Compare and read the R<sup>2</sup> fit summary before drilling into individual matched samples.
+            </div>
+            <div class="guide-step">
+              <strong>4. “I need to confirm what data entered the system.”</strong>
+              Open Ingest History or use the upload modal to ingest a new workbook.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="instrumentPage">
+        <div class="panel compact instrument-hero">
+          <div>
+            <div class="section-kicker">Current selection</div>
+            <h2>Selection summary and quality signals</h2>
+            <p class="support-copy">This panel summarizes the filtered cohort currently in scope, including sample coverage, outlier burden, and whether the subset is large enough for stable summary statistics.</p>
+          </div>
+          <div class="pill-row" id="instrumentPills"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Query and filter</h3>
+                <p>Define the analytical cohort here before interpreting plots or summary metrics. Filters apply directly to the rows used in tables, distributions, and reliability estimates.</p>
+              </div>
+            </div>
+
+          <div class="filter-row">
+            <div class="filter-field">
+              <label class="field-label" for="filterSampleInput">Sample ID</label>
+              <input class="text-input" id="filterSampleInput" placeholder="Search sample or partial ID" />
+            </div>
+            <div class="filter-field" id="filterTreatmentField">
+              <label class="field-label" for="filterTreatmentSelect">Treatment</label>
+              <select class="select-input" id="filterTreatmentSelect"></select>
+            </div>
+            <div class="filter-field" id="filterSourceField">
+              <label class="field-label" for="filterSourceSelect">Source sheet</label>
+              <select class="select-input" id="filterSourceSelect"></select>
+            </div>
+            <div class="filter-field">
+              <label class="field-label" for="filterLimitSelect">Rows</label>
+              <select class="select-input" id="filterLimitSelect">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label class="field-label" for="filterSortSelect">Sort by</label>
+              <select class="select-input" id="filterSortSelect"></select>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="primary-button" id="instrumentApplyButton">Apply Filters</button>
+            <button class="secondary-button" id="instrumentResetButton">Reset</button>
+            <button class="secondary-button" id="instrumentExportButton">Export Current View</button>
+            <div class="filter-note" id="instrumentFilterNote">Loading instrument-specific filter guidance...</div>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="instrumentKpis"></div>
+
+        <div class="segmented" id="instrumentTabs">
+          <button class="segment-button active" data-tab="table">Table</button>
+          <button class="segment-button" data-tab="charts">Charts</button>
+          <button class="segment-button" data-tab="analytics">Analytics</button>
+        </div>
+
+        <div class="tab-view active" id="instrumentTableTab">
+          <div class="panel">
+            <div class="panel-head split">
+              <div>
+                <h3>Record table</h3>
+                <p id="instrumentTableSummary">Preparing the current query view.</p>
+              </div>
+              <div class="pagination-note" id="instrumentPaginationNote">Page 1 of 1 within the filtered result set.</div>
+            </div>
+
+            <div class="table-wrap" id="instrumentTableWrap">
+              <div class="empty-state">Loading instrument records, summary statistics, and quality signals for the selected workspace.</div>
+            </div>
+
+            <div class="table-footer">
+              <button class="secondary-button" id="instrumentPrevButton">Previous</button>
+              <button class="secondary-button" id="instrumentNextButton">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-view" id="instrumentChartsTab">
+          <div class="two-col">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3 id="instrumentRankChartTitle">Top ranked samples</h3>
+                  <p id="instrumentRankChartDesc">This view summarizes the highest-ranked values in the active cohort so shifts across samples or treatments are easier to detect.</p>
+                </div>
+              </div>
+              <div class="chart-shell">
+                <canvas id="instrumentRankChart"></canvas>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3 id="instrumentHistogramTitle">Distribution profile</h3>
+                  <p id="instrumentHistogramDesc">Distribution bins show whether the selected cohort is tightly clustered, skewed, or broad enough to suggest multiple underlying populations.</p>
+                </div>
+              </div>
+              <div class="chart-shell">
+                <canvas id="instrumentHistogramChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Outliers and flags</h3>
+                  <p>Flagged records in this cohort are summarized here so unusual values can be checked against sample preparation, workbook structure, or instrument behavior.</p>
+                </div>
+              </div>
+              <div class="flag-list" id="instrumentFlags"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Metric completeness</h3>
+                  <p>Completeness is reported for each tracked variable so researchers can judge whether the cohort is suitable for comparison, export, or formal reporting.</p>
+                </div>
+              </div>
+              <div id="instrumentCompleteness"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-view" id="instrumentAnalyticsTab">
+          <div class="two-col">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Confidence and reliability</h3>
+                  <p>This table reports central tendency, spread, and interval estimates for the active cohort so you can assess measurement stability before interpreting differences.</p>
+                </div>
+              </div>
+              <div id="instrumentMetricsTable"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Grouped diagnostics</h3>
+                  <p>Grouped summaries aggregate the filtered cohort by sample or treatment, making between-group variability and standout groups easier to inspect.</p>
+                </div>
+              </div>
+              <div id="instrumentGroupsTable"></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Dataset health</h3>
+                  <p>Use this section to evaluate whether the current subset is analytically trustworthy, based on row count, missingness, outliers, and interval stability.</p>
+                </div>
+              </div>
+              <div id="instrumentHealthBreakdown"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Metric guide</h3>
+                  <p>These short definitions keep interpretation consistent across collaborators when reviewing spread, uncertainty, and data-quality indicators.</p>
+                </div>
+              </div>
+              <div class="microcopy-list">
+                <div class="microcopy-item">
+                  <strong>Coefficient of variation</strong>
+                  <span>Coefficient of variation expresses spread relative to the mean, which is useful when comparing stability across metrics with different scales.</span>
+                </div>
+                <div class="microcopy-item">
+                  <strong>95% confidence interval</strong>
+                  <span>The 95% confidence interval gives the plausible range for the cohort mean, assuming the filtered rows represent the underlying population reasonably well.</span>
+                </div>
+                <div class="microcopy-item">
+                  <strong>Potential outliers</strong>
+                  <span>Outliers are flagged with the interquartile-range rule and should be checked against raw rows, sample notes, or instrument-specific measurement issues.</span>
+                </div>
+                <div class="microcopy-item">
+                  <strong>Missing values</strong>
+                  <span>High missingness reduces confidence in downstream summaries and can bias group comparisons if missing records are not random.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="comparePage">
+        <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="section-kicker">Guided comparison</div>
+                <h2>OFDA vs Cottonscope comparison builder</h2>
+                <p>Build a reproducible OFDA-to-Cottonscope comparison using shared sample IDs, then examine whether the two instruments tell a consistent story for the same material.</p>
+              </div>
+            </div>
+
+          <div class="builder-grid">
+            <div class="builder-step">
+              <div class="step-index">Step 1</div>
+              <h3>Choose comparison pair</h3>
+              <select class="select-input" id="comparePairSelect">
+                <option value="ofda-cottonscope">OFDA vs Cottonscope</option>
+              </select>
+            </div>
+
+            <div class="builder-step">
+              <div class="step-index">Step 2</div>
+              <h3>How matching works</h3>
+              <div class="mini-pill success">Automatic shared sample matching</div>
+              <p class="support-copy">This page automatically compares every sample ID that appears in both OFDA and Cottonscope. You do not need to pick a shared sample ID to run the comparison.</p>
+            </div>
+
+            <div class="builder-step">
+              <div class="step-index">Step 3</div>
+              <h3>Choose ranking mode</h3>
+              <select class="select-input" id="compareRankingSelect">
+                <option value="abs_fit_residual">Largest distance from fit</option>
+                <option value="support_high">Highest matched support</option>
+                <option value="ofda_high">Highest OFDA mean</option>
+                <option value="cottonscope_high">Highest Cottonscope mean</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="builder-note">FAVIMAT is excluded from direct comparison because it measures single-fiber mechanical properties rather than geometric dimensions. This lab focuses on OFDA and Cottonscope agreement, and the comparison runs across all currently shared sample IDs by default. <strong>R<sup>2</sup></strong> is the headline fit metric and is shown immediately below.</div>
+
+          <div class="fit-stats-grid" id="compareAtGlance"></div>
+
+          <div class="builder-actions">
+            <input class="text-input" id="compareSearchInput" list="compareSampleList" placeholder="Optional matched sample ID filter" />
+            <datalist id="compareSampleList"></datalist>
+            <button class="primary-button" id="compareApplyButton">Run Comparison</button>
+            <button class="secondary-button" id="compareExportButton">Export Ranked Table</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="compareKpis"></div>
+
+        <div class="two-col">
+          <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Scatter plot: OFDA mean vs Cottonscope mean</h3>
+                  <p>Each point represents a matched sample, and the fitted line shows how strongly the two instruments track together across the shared cohort.</p>
+                </div>
+              </div>
+            <div class="chart-shell">
+              <canvas id="compareScatterChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Fit summary</h3>
+                  <p>This panel explains the overall OFDA-to-Cottonscope relationship in plain language so the client can orient around R<sup>2</sup> before reviewing individual matched samples.</p>
+                </div>
+              </div>
+            <div id="compareFitPanel" class="fit-panel"></div>
+          </div>
+        </div>
+
+        <div class="compare-grid">
+          <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Ranked matched samples</h3>
+                  <p>Rows are ranked by the selected fit or support rule so you can move directly to the matched samples that deserve closer review.</p>
+                </div>
+              </div>
+            <div class="table-wrap" id="compareTableWrap">
+              <div class="empty-state">Loading matched OFDA and Cottonscope records for comparison.</div>
+            </div>
+          </div>
+
+          <div class="panel compact">
+              <div class="panel-head">
+                <div>
+                  <h3>Per-sample detail</h3>
+                  <p>This detail view summarizes how one matched sample sits relative to the fitted relationship and how much measurement support exists behind it.</p>
+                </div>
+              </div>
+            <div id="compareDetailPanel" class="empty-state small">Select a matched sample to inspect its fitted-position context, within-sample spread, and observation counts supporting that comparison.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="historyPage">
+        <div class="kpi-grid" id="historyKpis"></div>
+
+        <div class="two-col">
+          <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Recent ingest activity</h3>
+                  <p>Use this activity feed to confirm which workbook sheets were loaded, how many rows they contributed, and when the database was last updated.</p>
+                </div>
+              </div>
+            <div class="timeline-list" id="historyTimeline"></div>
+          </div>
+
+          <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Latest upload impact</h3>
+                  <p>This panel preserves the most recent in-session upload result, including which instrument tables changed and how many rows or samples were added.</p>
+                </div>
+              </div>
+            <div id="historyLatestImpact" class="empty-state small">No workbook has been uploaded during this session yet. Use the sidebar Upload Data action to capture the next ingest event and its analytical impact here.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Ingest log</h3>
+                <p>The ingest log provides a traceable record of file name, sheet, row count, timestamp, and checksum for audit, troubleshooting, and reproducibility.</p>
+              </div>
+            </div>
+          <div class="table-wrap" id="historyTableWrap">
+            <div class="empty-state">Loading workbook ingest history and audit details.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="uploadModalBackdrop">
+    <div class="upload-modal">
+      <div class="modal-header">
+        <div>
+          <div class="section-kicker">Global upload</div>
+          <h2 style="margin:0 0 8px;">Upload new client workbook</h2>
+          <p class="support-copy">Use the global uploader to add new client workbooks without leaving the current analysis. Successful ingestion refreshes instrument summaries, comparison outputs, and ingest history.</p>
+        </div>
+        <button class="ghost-button" id="closeUploadModal">Close</button>
+      </div>
+
+      <div class="modal-grid">
+        <div class="panel compact">
+          <div class="dropzone" id="uploadDropzone">
+            <input type="file" id="uploadInput" accept=".xlsx,.xls" />
+            <div class="mini-pill">Excel only</div>
+            <h3>Drag and drop workbook</h3>
+            <p class="support-copy">Click to select a workbook or drop it here for structure detection, database ingest, and immediate analytical refresh.</p>
+            <button type="button" class="primary-button" id="uploadBrowseButton">Choose Workbook</button>
+          </div>
+          <div class="upload-legal">Accepted formats: `.xlsx` and `.xls`. The uploader inspects workbook structure, identifies supported instrument sheets, and then writes validated rows into PostgreSQL.</div>
+        </div>
+
+        <div class="panel compact">
+          <div class="panel-head">
+            <div>
+              <h3>Ingest progress</h3>
+              <p>Each step is reported explicitly so the research team can confirm validation, sheet detection, database load, and analytics refresh.</p>
+            </div>
+          </div>
+          <div class="upload-stage-list" id="uploadStages"></div>
+          <div class="upload-status-text" id="uploadStatus">Select a workbook to begin validation. After ingestion, this panel will report detected workbook content, appended rows, newly observed samples, and refresh timing.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>What changed after upload</h3>
+            <p>Review detected workbook content, appended rows, newly observed samples, archive location, and refresh timing before continuing with the updated dataset.</p>
+          </div>
+        </div>
+        <div id="uploadSummary" class="empty-state small">No workbook has been processed in this session yet. Once a file is ingested, this panel will summarize its effect on the database and dashboards.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PAGE_META = {
+      overview: {
+        eyebrow: "Decision Support Workspace",
+        title: "Fiber Intelligence Portal",
+        subtitle: "Start with the portfolio-level view across OFDA, Cottonscope, and FAVIMAT so you can decide where a deeper analytical review is actually needed.",
+      },
+      guide: {
+        eyebrow: "",
+        title: "User Guide",
+        subtitle: "Use this map of the portal when you want the shortest path to the right page, panel, or workflow without getting overwhelmed by the full dashboard.",
+      },
+      compare: {
+        eyebrow: "Compare Instruments",
+        title: "Instrument Comparison Lab",
+        subtitle: "Compare OFDA and Cottonscope on shared sample IDs, review R^2-based fit, and inspect the matched samples that most influence the relationship.",
+      },
+      history: {
+        eyebrow: "Ingest History",
+        title: "Workbook Activity and Impact",
+        subtitle: "Track what entered the system, when it was loaded, and how each workbook changed the data available for analysis and reporting.",
+      },
+    };
+
+    const INSTRUMENT_META = {
+      ofda: {
+        title: "OFDA Workspace",
+        eyebrow: "Instrument Workspace",
+        subtitle: "Review OFDA diameter measurements at the sample level, examine spread and interval estimates, and isolate source-sheet cohorts before export or comparison.",
+        primaryMetric: "mean_d_um",
+        metricLabel: "Mean diameter",
+        chartTitle: "OFDA sample trend line",
+        chartDescription: "The ranked line shows how average diameter changes across the highest samples, making abrupt drops or plateaus easier to spot.",
+        histogramTitle: "OFDA diameter distribution",
+        histogramDescription: "Use the distribution to judge whether the filtered cohort is tightly clustered or whether multiple diameter ranges may be present.",
+        note: "OFDA does not carry treatment as a native field in the current schema, so cohort definition relies on sample ID and source sheet.",
+        columns: ["sample_id", "run_label", "run_day", "mean_d_um", "n_measurements", "temp_c", "rh_pct", "source_sheet"],
+        sortOptions: [
+          ["", "No sort"],
+          ["sample_id", "Sample ID"],
+          ["mean_d_um", "Mean diameter"],
+          ["n_measurements", "Measurement count"],
+          ["temp_c", "Temperature"],
+          ["rh_pct", "Humidity"],
+          ["source_sheet", "Source sheet"],
+        ],
+      },
+      cottonscope: {
+        title: "Cottonscope Workspace",
+        eyebrow: "Instrument Workspace",
+        subtitle: "Review Cottonscope width measurements, quantify spread across samples, and prepare compatible cohorts for OFDA comparison.",
+        primaryMetric: "wd_um",
+        metricLabel: "Mean width",
+        chartTitle: "Cottonscope ranked sample scatter",
+        chartDescription: "Each point represents a ranked sample mean, helping researchers see jumps, gaps, and spread in measured width without implying continuity.",
+        histogramTitle: "Cottonscope width distribution",
+        histogramDescription: "The distribution highlights whether Cottonscope widths cluster tightly or span multiple material conditions within the active cohort.",
+        note: "Cottonscope currently supports sample-based filtering only; treatment and source-sheet fields are not available in this dataset.",
+        columns: ["sample_id", "wd_um", "instrument_id", "notes"],
+        sortOptions: [
+          ["", "No sort"],
+          ["sample_id", "Sample ID"],
+          ["wd_um", "Width"],
+          ["instrument_id", "Instrument ID"],
+        ],
+      },
+      favimat: {
+        title: "FAVIMAT Workspace",
+        eyebrow: "Instrument Workspace",
+        subtitle: "Review FAVIMAT single-fiber mechanics by treatment and replicate, with emphasis on tenacity, force, and density rather than geometric comparison.",
+        primaryMetric: "tenacity",
+        metricLabel: "Tenacity",
+        chartTitle: "FAVIMAT treatment radar",
+        chartDescription: "The radar view compares treatment-level mean response so directional differences in mechanical performance stand out quickly.",
+        histogramTitle: "FAVIMAT tenacity distribution",
+        histogramDescription: "The tenacity distribution shows whether replicate-level performance is stable or highly variable in the active treatment cohort.",
+        note: "FAVIMAT is organized by treatment and replicate. It is not compared directly with OFDA or Cottonscope because the measured properties are different.",
+        columns: ["sample_id", "treatment", "replicate", "tenacity", "fmax", "linear_density", "emax", "ebreak", "work_tb"],
+        sortOptions: [
+          ["", "No sort"],
+          ["sample_id", "Sample ID"],
+          ["treatment", "Treatment"],
+          ["replicate", "Replicate"],
+          ["tenacity", "Tenacity"],
+          ["fmax", "Fmax"],
+          ["linear_density", "Linear density"],
+          ["emax", "Emax"],
+          ["ebreak", "Ebreak"],
+          ["work_tb", "Work TB"],
+        ],
+      },
+    };
+
+    const state = {
+      page: "overview",
+      currentInstrument: "ofda",
+      instrumentView: "table",
+      compareRanking: "abs_fit_residual",
+      compareSearch: "",
+      compareRows: [],
+      compareModel: null,
+      compareSelectedSample: "",
+      historyRows: [],
+      lastUpload: null,
+      charts: {},
+      instrumentStates: {
+        ofda: { sample_id: "", treatment: "", source_sheet: "", limit: "25", offset: 0, sort_by: "", sort_dir: "asc" },
+        cottonscope: { sample_id: "", treatment: "", source_sheet: "", limit: "25", offset: 0, sort_by: "", sort_dir: "asc" },
+        favimat: { sample_id: "", treatment: "", source_sheet: "", limit: "25", offset: 0, sort_by: "", sort_dir: "asc" },
+      },
+    };
+
+    const uploadStages = [
+      { key: "validate", title: "Validate workbook", copy: "Confirm that the uploaded file is a supported Excel workbook and can be processed without structural errors." },
+      { key: "detect", title: "Detect workbook structure", copy: "Inspect sheet names and column structure to identify OFDA, Cottonscope, and FAVIMAT content before loading." },
+      { key: "ingest", title: "Load data into PostgreSQL", copy: "Append validated records, write an ingest log entry, and archive the source workbook for traceable study records." },
+      { key: "refresh", title: "Refresh analytics", copy: "Rebuild summaries, visualizations, comparison results, and ingest history so the portal reflects the newly loaded data." },
+    ];
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatDisplayText(value) {
+      return escapeHtml(value).replaceAll("R^2", "R<sup>2</sup>");
+    }
+
+    function formatNumber(value, digits = 2) {
+      if (value === null || value === undefined || value === "") return "-";
+      const numeric = Number(value);
+      if (Number.isNaN(numeric)) return value;
+      return Number.isInteger(numeric) ? numeric.toString() : numeric.toFixed(digits).replace(/\.00$/, "");
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return value;
+      return parsed.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+
+    function titleCase(value) {
+      return String(value || "")
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, (match) => match.toUpperCase());
+    }
+
+    function getPrimaryMetric(instrument) {
+      return INSTRUMENT_META[instrument].primaryMetric;
+    }
+
+    function getRegressionStrengthLabel(rSquared) {
+      const numeric = Number(rSquared);
+      if (Number.isNaN(numeric)) return "Fit unavailable";
+      if (numeric >= 0.85) return "Very strong fit";
+      if (numeric >= 0.65) return "Moderate fit";
+      if (numeric >= 0.4) return "Mixed fit";
+      return "Weak fit";
+    }
+
+    function setLastUpdated(timestamp = new Date().toISOString()) {
+      document.getElementById("lastUpdatedPill").textContent = `Updated ${formatDate(timestamp)}`;
+    }
+
+    function syncThemeToggle() {
+      const button = document.getElementById("themeToggle");
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const nextThemeLabel = isDark ? "Switch to light mode" : "Switch to dark mode";
+      button.setAttribute("aria-label", nextThemeLabel);
+      button.setAttribute("title", nextThemeLabel);
+    }
+
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.detail || payload.error || "Request failed");
+      }
+      return payload;
+    }
+
+    function renderPageHeader() {
+      const eyebrow = document.getElementById("pageEyebrow");
+      const title = document.getElementById("pageTitle");
+      const subtitle = document.getElementById("pageSubtitle");
+
+      if (state.page === "instrument") {
+        const meta = INSTRUMENT_META[state.currentInstrument];
+        eyebrow.hidden = !meta.eyebrow;
+        eyebrow.innerHTML = formatDisplayText(meta.eyebrow || "");
+        title.innerHTML = formatDisplayText(meta.title);
+        subtitle.innerHTML = formatDisplayText(meta.subtitle);
+        return;
+      }
+
+      const meta = PAGE_META[state.page];
+      eyebrow.hidden = !meta.eyebrow;
+      eyebrow.innerHTML = formatDisplayText(meta.eyebrow || "");
+      title.innerHTML = formatDisplayText(meta.title);
+      subtitle.innerHTML = formatDisplayText(meta.subtitle);
+    }
+
+    function renderNav() {
+      document.querySelectorAll(".nav-item").forEach((button) => {
+        const page = button.dataset.page;
+        const instrument = button.dataset.instrument;
+        const isActive = page === "instrument"
+          ? state.page === "instrument" && state.currentInstrument === instrument
+          : state.page === page;
+        button.classList.toggle("active", isActive);
+      });
+    }
+
+    function showPage(page) {
+      state.page = page;
+      document.querySelectorAll(".page").forEach((panel) => panel.classList.remove("active"));
+      document.getElementById(`${page}Page`).classList.add("active");
+      renderNav();
+      renderPageHeader();
+    }
+
+    function setPage(page, instrument = null) {
+      if (page === "instrument" && instrument) {
+        state.currentInstrument = instrument;
+      }
+      showPage(page);
+
+      if (page === "overview") {
+        loadOverview();
+      } else if (page === "instrument") {
+        loadInstrument();
+      } else if (page === "compare") {
+        loadCompare();
+      } else if (page === "history") {
+        loadHistory();
+      }
+    }
+
+    function getInstrumentState() {
+      return state.instrumentStates[state.currentInstrument];
+    }
+
+    function buildInstrumentParams(allRows = false) {
+      const settings = getInstrumentState();
+      const params = new URLSearchParams();
+      params.set("table", state.currentInstrument);
+      params.set("limit", allRows ? "all" : settings.limit);
+      params.set("offset", allRows ? "0" : String(settings.offset));
+      params.set("sort_dir", settings.sort_dir || "asc");
+      if (settings.sort_by) params.set("sort_by", settings.sort_by);
+      if (settings.sample_id) params.set("sample_id", settings.sample_id);
+      if (settings.treatment) params.set("treatment", settings.treatment);
+      if (settings.source_sheet) params.set("source_sheet", settings.source_sheet);
+      return params;
+    }
+
+    function createKpiMarkup(cards) {
+      if (!cards.length) {
+        return `<div class="empty-state">Summary metrics will appear here once this view has data available for calculation.</div>`;
+      }
+      return cards.map((card) => `
+        <article class="kpi-card">
+          <div class="kpi-label">${formatDisplayText(card.label)}</div>
+          <div class="kpi-value">${escapeHtml(formatNumber(card.value))}</div>
+          ${card.note ? `<div class="kpi-note">${formatDisplayText(card.note)}</div>` : ""}
+        </article>
+      `).join("");
+    }
+
+    function createStatusPill(label, tone = "") {
+      return `<span class="status-pill ${tone}">${escapeHtml(label)}</span>`;
+    }
+
+    function renderGenericTable(targetId, rows, columns, options = {}) {
+      const root = document.getElementById(targetId);
+      if (!rows.length) {
+        root.innerHTML = `<div class="empty-state">${escapeHtml(options.emptyMessage || "No tabular records are available for the current view.")}</div>`;
+        return;
+      }
+
+      const headers = columns.map((column) => {
+        const label = options.labels?.[column] || titleCase(column);
+        const sortAttr = options.sortable ? ` class="sortable" data-sort="${column}"` : "";
+        const suffix = options.activeSort === column ? (options.sortDir === "asc" ? " ▲" : " ▼") : "";
+        return `<th${sortAttr}>${escapeHtml(label + suffix)}</th>`;
+      }).join("");
+
+      const body = rows.map((row) => {
+        const attrs = options.rowAttr ? options.rowAttr(row) : "";
+        return `
+          <tr ${attrs}>
+            ${columns.map((column) => `<td>${escapeHtml(formatNumber(row[column]))}</td>`).join("")}
+          </tr>
+        `;
+      }).join("");
+
+      const tableHtml = `
+        <table>
+          <thead>
+            <tr>${headers}</tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      `;
+
+      if (options.scrollShell) {
+        root.innerHTML = `
+          <div class="table-scroll-shell">
+            <div class="table-scroll-hint">${escapeHtml(options.scrollHint || "Wide table")}</div>
+            <div class="table-wrap wide-table">
+              ${tableHtml}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      root.innerHTML = tableHtml;
+    }
+
+    function destroyChart(id) {
+      if (state.charts[id]) {
+        state.charts[id].destroy();
+      }
+    }
+
+    function makeChart(id, config) {
+      destroyChart(id);
+      const context = document.getElementById(id);
+      state.charts[id] = new Chart(context, config);
+    }
+
+    function buildHistogram(values, bins = 8) {
+      if (!values.length) {
+        return { labels: [], data: [] };
+      }
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      if (min === max) {
+        return { labels: [`${formatNumber(min)}`], data: [values.length] };
+      }
+      const width = (max - min) / bins || 1;
+      const counts = Array.from({ length: bins }, () => 0);
+      for (const value of values) {
+        const rawIndex = Math.floor((value - min) / width);
+        const index = Math.min(bins - 1, Math.max(0, rawIndex));
+        counts[index] += 1;
+      }
+      const labels = counts.map((_, index) => {
+        const start = min + index * width;
+        const end = start + width;
+        return `${formatNumber(start)} to ${formatNumber(end)}`;
+      });
+      return { labels, data: counts };
+    }
+
+    function groupInstrumentRows(rows, instrument) {
+      const primaryMetric = getPrimaryMetric(instrument);
+      if (!rows.length) return [];
+
+      if (instrument === "favimat") {
+        const byTreatment = {};
+        rows.forEach((row) => {
+          const key = row.treatment || "unknown";
+          const value = Number(row[primaryMetric]);
+          if (Number.isNaN(value)) return;
+          if (!byTreatment[key]) byTreatment[key] = [];
+          byTreatment[key].push(value);
+        });
+        return Object.entries(byTreatment)
+          .map(([key, values]) => ({
+            label: key,
+            value: values.reduce((sum, item) => sum + item, 0) / values.length,
+          }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 10);
+      }
+
+      const bySample = {};
+      rows.forEach((row) => {
+        const key = row.sample_id || "unknown";
+        const value = Number(row[primaryMetric]);
+        if (Number.isNaN(value)) return;
+        if (!bySample[key]) bySample[key] = [];
+        bySample[key].push(value);
+      });
+      return Object.entries(bySample)
+        .map(([key, values]) => ({
+          label: key,
+          value: values.reduce((sum, item) => sum + item, 0) / values.length,
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 10);
+    }
+
+    function countMissingForInstrument(rows, instrument) {
+      const metrics = {
+        ofda: ["mean_d_um", "n_measurements", "temp_c", "rh_pct"],
+        cottonscope: ["wd_um"],
+        favimat: ["tenacity", "fmax", "linear_density", "emax", "ebreak", "work_tb"],
+      }[instrument];
+      return rows.reduce((sum, row) => {
+        return sum + metrics.reduce((metricSum, metric) => metricSum + (row[metric] === null || row[metric] === undefined || row[metric] === "" ? 1 : 0), 0);
+      }, 0);
+    }
+
+    function buildOverviewPortfolioCards(data) {
+      return Object.entries(INSTRUMENT_META).map(([key, meta]) => {
+        const summary = data.summaries[key];
+        const analytics = data.analytics[key] || {};
+        const cards = summary.cards || [];
+        const rows = cards.find((item) => item.label === "Rows")?.value ?? "-";
+        const samples = cards.find((item) => item.label === "Unique Samples")?.value ?? "-";
+        const primary = cards[2]?.value ?? "-";
+        const health = analytics.health || {};
+        const topFlag = analytics.flags?.[0] || "No elevated analytical flags are active in the current portfolio snapshot.";
+        const workspaceHint = key === "favimat"
+          ? "Best for treatment-by-treatment mechanics review."
+          : (key === "ofda"
+            ? "Best for diameter cohort review and source-sheet analysis."
+            : "Best for width review and OFDA comparison prep.");
+        return `
+          <article class="portfolio-card">
+            <div class="portfolio-head">
+              <div class="summary-meta">
+                <span>${escapeHtml(meta.title.replace(" Workspace", ""))}</span>
+                <span>${escapeHtml(workspaceHint)}</span>
+              </div>
+              <h4>${escapeHtml(meta.title.replace(" Workspace", ""))}</h4>
+              <div class="support-copy">${escapeHtml(meta.subtitle)}</div>
+            </div>
+
+            <div class="fit-badge-row">
+              ${createStatusPill(`${formatNumber(rows, 0)} rows`)}
+              ${createStatusPill(`${formatNumber(samples, 0)} samples`)}
+              ${health.outlier_count ? createStatusPill(`${formatNumber(health.outlier_count, 0)} outlier flags`, "warning") : createStatusPill("No outlier flags", "success")}
+            </div>
+
+            <div class="portfolio-stats">
+              <div class="portfolio-stat">
+                <div class="portfolio-stat-label">Primary metric</div>
+                <div class="portfolio-stat-value">${escapeHtml(formatNumber(primary))}</div>
+              </div>
+              <div class="portfolio-stat">
+                <div class="portfolio-stat-label">Missing key values</div>
+                <div class="portfolio-stat-value">${escapeHtml(formatNumber(health.missing_total || 0, 0))}</div>
+              </div>
+              <div class="portfolio-stat">
+                <div class="portfolio-stat-label">Unique samples</div>
+                <div class="portfolio-stat-value">${escapeHtml(formatNumber(samples, 0))}</div>
+              </div>
+              <div class="portfolio-stat">
+                <div class="portfolio-stat-label">Current focus</div>
+                <div class="portfolio-stat-value">${escapeHtml(meta.metricLabel)}</div>
+              </div>
+            </div>
+
+            <div class="guide-item">
+              <strong>What to look at next</strong>
+              ${escapeHtml(topFlag)}
+            </div>
+
+            <div class="portfolio-actions">
+              <button class="secondary-button overview-open-instrument" data-instrument="${key}">Open ${escapeHtml(meta.title.replace(" Workspace", ""))}</button>
+              <button class="secondary-button" data-nav-target="guide">How to read this</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderAlertList(targetId, alerts, emptyMessage) {
+      const root = document.getElementById(targetId);
+      if (!alerts.length) {
+        root.innerHTML = `<div class="empty-state small">${escapeHtml(emptyMessage)}</div>`;
+        return;
+      }
+      root.innerHTML = alerts.map((alert) => `
+        <div class="alert-item">
+          <strong>${formatDisplayText(alert.title)}</strong>
+          <div class="timeline-meta">${formatDisplayText(alert.copy)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderTimeline(targetId, rows, emptyMessage) {
+      const root = document.getElementById(targetId);
+      if (!rows.length) {
+        root.innerHTML = `<div class="empty-state small">${escapeHtml(emptyMessage)}</div>`;
+        return;
+      }
+      root.innerHTML = rows.map((row) => `
+        <div class="timeline-item">
+          <strong>${escapeHtml(row.file_name)}</strong>
+          <div class="timeline-meta">
+            ${escapeHtml(row.sheet_name)} · ${escapeHtml(formatNumber(row.row_count, 0))} rows · ${escapeHtml(formatDate(row.ingested_at))}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadOverview() {
+      try {
+        const [ofdaSummary, cottonscopeSummary, favimatSummary, ofdaAnalytics, cottonscopeAnalytics, favimatAnalytics, compareData, historyData] = await Promise.all([
+          fetchJson("/api/summary?table=ofda"),
+          fetchJson("/api/summary?table=cottonscope"),
+          fetchJson("/api/summary?table=favimat"),
+          fetchJson("/api/analytics?table=ofda"),
+          fetchJson("/api/analytics?table=cottonscope"),
+          fetchJson("/api/analytics?table=favimat"),
+          fetchJson("/api/compare/ofda-cottonscope"),
+          fetchJson("/api/uploads/history"),
+        ]);
+
+        const summaries = {
+          ofda: ofdaSummary,
+          cottonscope: cottonscopeSummary,
+          favimat: favimatSummary,
+        };
+
+        const analytics = {
+          ofda: ofdaAnalytics,
+          cottonscope: cottonscopeAnalytics,
+          favimat: favimatAnalytics,
+        };
+
+        const totalRows = Object.values(summaries)
+          .map((summary) => summary.cards.find((card) => card.label === "Rows")?.value || 0)
+          .reduce((sum, value) => sum + Number(value || 0), 0);
+
+        const matchedSamples = compareData.summary.find((item) => item.label === "Matched Samples")?.value || 0;
+        const recentFile = historyData.rows[0]?.file_name || "No workbook ingested yet";
+        const activityCount = historyData.rows.length;
+
+        document.getElementById("overviewKpis").innerHTML = createKpiMarkup([
+          { label: "Tracked instrument rows", value: totalRows, note: "Combined records currently stored across OFDA, Cottonscope, and FAVIMAT." },
+          { label: "Matched comparison samples", value: matchedSamples, note: "Shared sample IDs available for OFDA versus Cottonscope comparison." },
+          { label: "Recent ingest events", value: activityCount, note: "Visible workbook and sheet loads from the ingest audit trail." },
+          { label: "Latest workbook", value: recentFile, note: historyData.rows[0] ? `Most recently ingested on ${formatDate(historyData.rows[0].ingested_at)}.` : "Use Upload Data to ingest the first workbook into the portal." },
+        ]);
+
+        document.getElementById("overviewPortfolioGrid").innerHTML = buildOverviewPortfolioCards({ summaries, analytics });
+
+        const alertItems = [];
+        Object.entries(analytics).forEach(([key, payload]) => {
+          const primaryFlag = payload.flags?.[0];
+          if (primaryFlag) {
+            alertItems.push({
+              title: `${INSTRUMENT_META[key].title.replace(" Workspace", "")} signal`,
+              copy: primaryFlag,
+            });
+          }
+        });
+
+        const rSquared = compareData.regression?.r_squared;
+        if (rSquared !== null && rSquared !== undefined && rSquared !== "") {
+          alertItems.push({
+            title: "Cross-instrument fit",
+            copy: `OFDA vs Cottonscope currently shows ${getRegressionStrengthLabel(rSquared).toLowerCase()} with R^2 = ${formatNumber(rSquared, 3)} across matched samples.`,
+          });
+        }
+
+        if (state.lastUpload?.result?.file_name) {
+          alertItems.push({
+            title: "Latest upload impact",
+            copy: `${state.lastUpload.result.file_name} refreshed the portal at ${formatDate(state.lastUpload.updated_at)}.`,
+          });
+        }
+
+        renderAlertList(
+          "overviewAlerts",
+          alertItems,
+          "No elevated data quality or comparison signals are currently flagged at the portfolio level."
+        );
+
+        renderTimeline("overviewActivity", historyData.rows.slice(0, 5), "No ingest events are available yet. Upload a workbook to begin the audit trail.");
+        renderSidebarLatestIngest(historyData.rows);
+        bindOverviewInstrumentButtons();
+        setLastUpdated();
+      } catch (error) {
+        document.getElementById("overviewKpis").innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function bindOverviewInstrumentButtons() {
+      document.querySelectorAll(".overview-open-instrument").forEach((button) => {
+        button.addEventListener("click", () => {
+          setPage("instrument", button.dataset.instrument);
+        });
+      });
+      document.querySelectorAll("#overviewPortfolioGrid [data-nav-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+          setPage(button.dataset.navTarget, button.dataset.navInstrument || null);
+        });
+      });
+    }
+
+    function renderSidebarLatestIngest(rows) {
+      const latest = rows[0];
+      const target = document.getElementById("sidebarLatestIngest");
+      if (!latest) {
+        target.textContent = "No workbook has been ingested yet. Use Upload Data to create the first audit entry.";
+        return;
+      }
+      target.innerHTML = `
+        <strong>${escapeHtml(latest.file_name)}</strong><br />
+        ${escapeHtml(latest.sheet_name)} · ${escapeHtml(formatNumber(latest.row_count, 0))} rows<br />
+        ${escapeHtml(formatDate(latest.ingested_at))}
+      `;
+    }
+
+    function populateInstrumentControls(filters) {
+      const settings = getInstrumentState();
+      const meta = INSTRUMENT_META[state.currentInstrument];
+      const showTreatment = state.currentInstrument === "favimat";
+      const showSource = state.currentInstrument === "ofda";
+
+      document.getElementById("filterSampleInput").value = settings.sample_id;
+      document.getElementById("filterLimitSelect").value = settings.limit;
+      document.getElementById("filterSortSelect").innerHTML = meta.sortOptions
+        .map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`)
+        .join("");
+      document.getElementById("filterSortSelect").value = settings.sort_by;
+
+      const treatmentSelect = document.getElementById("filterTreatmentSelect");
+      const sourceSelect = document.getElementById("filterSourceSelect");
+      const treatmentOptions = [`<option value="">All treatments</option>`]
+        .concat((filters.treatments || []).map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`));
+      const sourceOptions = [`<option value="">All source sheets</option>`]
+        .concat((filters.source_sheets || []).map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`));
+
+      treatmentSelect.innerHTML = treatmentOptions.join("");
+      sourceSelect.innerHTML = sourceOptions.join("");
+      treatmentSelect.value = settings.treatment;
+      sourceSelect.value = settings.source_sheet;
+
+      treatmentSelect.disabled = !showTreatment;
+      sourceSelect.disabled = !showSource;
+      document.getElementById("filterTreatmentField").hidden = !showTreatment;
+      document.getElementById("filterSourceField").hidden = !showSource;
+      document.getElementById("instrumentFilterNote").textContent = meta.note;
+    }
+
+    function renderInstrumentPills(analytics) {
+      const pills = [];
+      if (analytics.health) {
+        pills.push(createStatusPill(`${analytics.health.rows} rows in current view`));
+        pills.push(createStatusPill(`${analytics.health.unique_samples} unique samples`));
+        if (analytics.health.outlier_count) {
+          pills.push(createStatusPill(`${analytics.health.outlier_count} outlier flags`, "warning"));
+        } else {
+          pills.push(createStatusPill("No outlier flags in current filter", "success"));
+        }
+      }
+      document.getElementById("instrumentPills").innerHTML = pills.join("");
+    }
+
+    function renderInstrumentHealth(analytics) {
+      const health = analytics.health || {};
+      const primaryStats = analytics.metrics?.[0] || {};
+      const completeness = analytics.completeness || [];
+
+      document.getElementById("instrumentKpis").innerHTML = createKpiMarkup([
+        { label: "Rows in current view", value: health.rows || 0, note: "Records remaining after the active filters are applied." },
+        { label: "Unique samples", value: health.unique_samples || 0, note: "Distinct sample IDs represented in the filtered cohort." },
+        { label: `${titleCase(health.primary_metric || getPrimaryMetric(state.currentInstrument))} mean`, value: primaryStats.mean, note: "Average value for the primary reporting metric in this selection." },
+        { label: "Potential outliers", value: health.outlier_count || 0, note: "Records flagged outside the interquartile-range expectation." },
+        { label: "Missing key values", value: health.missing_total || 0, note: "Blank or unavailable entries across priority variables." },
+      ]);
+
+      const healthCards = [
+        { title: "Dataset health", copy: `${formatNumber(health.rows, 0)} records across ${formatNumber(health.unique_samples, 0)} samples are contributing to the current analysis subset.` },
+        { title: "Confidence and reliability", copy: primaryStats.ci95_low !== null ? `The estimated 95% confidence interval for ${titleCase(health.primary_metric)} spans ${formatNumber(primaryStats.ci95_low)} to ${formatNumber(primaryStats.ci95_high)}, indicating the uncertainty around the observed mean.` : "A confidence interval could not be estimated for this selection because the available observations are too limited or incomplete." },
+        { title: "Outliers and flags", copy: health.outlier_count ? `${formatNumber(health.outlier_count, 0)} observations fall outside the expected ${titleCase(health.primary_metric)} range and merit sample-level review.` : "No observations are currently flagged as unusual relative to the filtered distribution." },
+        { title: "Missing data", copy: completeness.length ? `${completeness.filter((item) => item.missing > 0).length} tracked variables contain missing values that may affect reporting completeness.` : "Completeness diagnostics are not available for this selection." },
+      ];
+
+      document.getElementById("instrumentHealthBreakdown").innerHTML = healthCards.map((card) => `
+        <div class="summary-card">
+          <h4>${escapeHtml(card.title)}</h4>
+          <div class="support-copy">${escapeHtml(card.copy)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderInstrumentFlags(analytics) {
+      const flags = analytics.flags || [];
+      const root = document.getElementById("instrumentFlags");
+      if (!flags.length) {
+        root.innerHTML = `<div class="empty-state small">No elevated quality, spread, or outlier flags are active for the current filtered cohort.</div>`;
+        return;
+      }
+      root.innerHTML = flags.map((flag) => `
+        <div class="flag-item">
+          <strong>Analytical flag</strong>
+          <div class="timeline-meta">${escapeHtml(flag)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderInstrumentCompleteness(analytics) {
+      const rows = analytics.completeness || [];
+      if (!rows.length) {
+        document.getElementById("instrumentCompleteness").innerHTML = `<div class="empty-state small">Completeness diagnostics are not available for the current selection.</div>`;
+        return;
+      }
+      renderGenericTable(
+        "instrumentCompleteness",
+        rows,
+        ["metric", "missing", "missing_pct"],
+        {
+          scrollShell: true,
+          scrollHint: "Scroll horizontally to review missing-value counts and percentages for every tracked variable.",
+          labels: {
+            metric: "Metric",
+            missing: "Missing values",
+            missing_pct: "Missing %",
+          },
+        }
+      );
+    }
+
+    function renderInstrumentMetrics(analytics) {
+      const rows = analytics.metrics || [];
+      if (!rows.length) {
+        document.getElementById("instrumentMetricsTable").innerHTML = `<div class="empty-state small">Descriptive statistics are not available for the current filtered subset.</div>`;
+        return;
+      }
+      renderGenericTable(
+        "instrumentMetricsTable",
+        rows,
+        ["metric", "count", "mean", "median", "std_dev", "variance", "cv_pct", "ci95_low", "ci95_high", "q1", "q3", "iqr", "min", "max"],
+        {
+          scrollShell: true,
+          scrollHint: "Scroll horizontally to review confidence intervals, quartiles, spread, and range statistics.",
+          labels: {
+            metric: "Metric",
+            count: "N",
+            mean: "Mean",
+            median: "Median",
+            std_dev: "Std Dev",
+            variance: "Variance",
+            cv_pct: "CV %",
+            ci95_low: "95% CI Low",
+            ci95_high: "95% CI High",
+            q1: "Q1",
+            q3: "Q3",
+            iqr: "IQR",
+            min: "Min",
+            max: "Max",
+          },
+        }
+      );
+    }
+
+    function renderInstrumentGroups(analytics) {
+      const rows = analytics.groups || [];
+      if (!rows.length) {
+        document.getElementById("instrumentGroupsTable").innerHTML = `<div class="empty-state small">Grouped diagnostics are not available for the current filter combination.</div>`;
+        return;
+      }
+      renderGenericTable("instrumentGroupsTable", rows, Object.keys(rows[0]), {
+        scrollShell: true,
+        scrollHint: "Scroll horizontally to compare sample- or treatment-level statistics across all reported columns.",
+      });
+    }
+
+    function renderInstrumentCharts(allRows) {
+      const meta = INSTRUMENT_META[state.currentInstrument];
+      const groups = groupInstrumentRows(allRows, state.currentInstrument);
+      const metricKey = getPrimaryMetric(state.currentInstrument);
+      const histogramValues = allRows
+        .map((row) => Number(row[metricKey]))
+        .filter((value) => !Number.isNaN(value));
+      const histogram = buildHistogram(histogramValues);
+
+      document.getElementById("instrumentRankChartTitle").textContent = meta.chartTitle;
+      document.getElementById("instrumentRankChartDesc").textContent = meta.chartDescription;
+      document.getElementById("instrumentHistogramTitle").textContent = meta.histogramTitle;
+      document.getElementById("instrumentHistogramDesc").textContent = meta.histogramDescription;
+
+      const tickColor = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+      const rankValues = groups.map((item) => Number(item.value.toFixed(2)));
+      let rankChartConfig;
+
+      if (state.currentInstrument === "ofda") {
+        rankChartConfig = {
+          type: "line",
+          data: {
+            labels: groups.map((item) => item.label),
+            datasets: [{
+              label: meta.metricLabel,
+              data: rankValues,
+              borderColor: "rgba(90, 22, 24, 0.9)",
+              backgroundColor: "rgba(90, 22, 24, 0.16)",
+              pointBackgroundColor: "rgba(215, 177, 90, 0.92)",
+              pointBorderColor: "rgba(90, 22, 24, 0.85)",
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              fill: true,
+              tension: 0.32,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: {
+                ticks: { color: tickColor },
+                grid: { display: false },
+              },
+              y: {
+                ticks: { color: tickColor },
+                grid: { color: "rgba(125,125,125,0.1)" },
+              },
+            },
+          },
+        };
+      } else if (state.currentInstrument === "cottonscope") {
+        rankChartConfig = {
+          type: "scatter",
+          data: {
+            datasets: [{
+              label: meta.metricLabel,
+              data: groups.map((item, index) => ({
+                x: index + 1,
+                y: Number(item.value.toFixed(2)),
+                sample: item.label,
+              })),
+              backgroundColor: "rgba(90, 22, 24, 0.78)",
+              pointRadius: 6,
+              pointHoverRadius: 7,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label(context) {
+                    return `${context.raw.sample}: ${formatNumber(context.raw.y)}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                title: { display: true, text: "Ranked sample position" },
+                ticks: { color: tickColor, precision: 0 },
+                grid: { display: false },
+              },
+              y: {
+                title: { display: true, text: "Mean width (um)" },
+                ticks: { color: tickColor },
+                grid: { color: "rgba(125,125,125,0.1)" },
+              },
+            },
+          },
+        };
+      } else {
+        rankChartConfig = {
+          type: "radar",
+          data: {
+            labels: groups.map((item) => item.label),
+            datasets: [{
+              label: meta.metricLabel,
+              data: rankValues,
+              borderColor: "rgba(90, 22, 24, 0.88)",
+              backgroundColor: "rgba(90, 22, 24, 0.14)",
+              pointBackgroundColor: "rgba(215, 177, 90, 0.94)",
+              pointBorderColor: "rgba(90, 22, 24, 0.88)",
+              pointRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              r: {
+                grid: { color: "rgba(125,125,125,0.1)" },
+                angleLines: { color: "rgba(125,125,125,0.1)" },
+                pointLabels: { color: tickColor },
+                ticks: {
+                  color: tickColor,
+                  backdropColor: "transparent",
+                },
+              },
+            },
+          },
+        };
+      }
+
+      makeChart("instrumentRankChart", rankChartConfig);
+
+      makeChart("instrumentHistogramChart", {
+        type: "bar",
+        data: {
+          labels: histogram.labels,
+          datasets: [{
+            label: `${meta.metricLabel} distribution`,
+            data: histogram.data,
+            backgroundColor: "rgba(102, 125, 106, 0.76)",
+            borderRadius: 10,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            x: {
+              ticks: { color: tickColor },
+              grid: { display: false },
+            },
+            y: {
+              ticks: { color: tickColor },
+              grid: { color: "rgba(125,125,125,0.1)" },
+            },
+          },
+        },
+      });
+    }
+
+    function renderInstrumentTable(tableRows, total, limit, offset) {
+      const settings = getInstrumentState();
+      const meta = INSTRUMENT_META[state.currentInstrument];
+      renderGenericTable("instrumentTableWrap", tableRows, meta.columns, {
+        sortable: true,
+        activeSort: settings.sort_by,
+        sortDir: settings.sort_dir,
+        emptyMessage: "No records match the current filter selection. Try broadening the query or resetting filters.",
+      });
+
+      const pageSize = limit === "all" ? total || tableRows.length : Number(limit);
+      const page = limit === "all" ? 1 : Math.floor(offset / pageSize) + 1;
+      const totalPages = limit === "all" ? 1 : Math.max(1, Math.ceil(total / pageSize));
+      document.getElementById("instrumentTableSummary").textContent = `Showing ${tableRows.length} of ${total} records in the current ${meta.title.replace(" Workspace", "")} selection.`;
+      document.getElementById("instrumentPaginationNote").textContent = limit === "all" ? "Displaying all rows in one table." : `Page ${page} of ${totalPages} within the filtered result set.`;
+      document.getElementById("instrumentPrevButton").disabled = limit === "all" || offset === 0;
+      document.getElementById("instrumentNextButton").disabled = limit === "all" || offset + pageSize >= total;
+    }
+
+    async function loadInstrument() {
+      const meta = INSTRUMENT_META[state.currentInstrument];
+      const settings = getInstrumentState();
+
+      try {
+        const [summary, tableData, allRowsData, analytics] = await Promise.all([
+          fetchJson(`/api/summary?table=${state.currentInstrument}`),
+          fetchJson(`/api/query?${buildInstrumentParams(false).toString()}`),
+          fetchJson(`/api/query?${buildInstrumentParams(true).toString()}`),
+          fetchJson(`/api/analytics?${buildInstrumentParams(true).toString()}`),
+        ]);
+
+        populateInstrumentControls(summary.filters || {});
+        renderInstrumentPills(analytics);
+        renderInstrumentHealth(analytics);
+        renderInstrumentFlags(analytics);
+        renderInstrumentCompleteness(analytics);
+        renderInstrumentMetrics(analytics);
+        renderInstrumentGroups(analytics);
+        renderInstrumentCharts(allRowsData.rows || []);
+        renderInstrumentTable(tableData.rows || [], tableData.total || 0, settings.limit, settings.offset);
+        attachInstrumentTableSortHandlers();
+        setLastUpdated();
+      } catch (error) {
+        document.getElementById("instrumentKpis").innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function attachInstrumentTableSortHandlers() {
+      document.querySelectorAll("#instrumentTableWrap th[data-sort]").forEach((header) => {
+        header.addEventListener("click", () => {
+          const settings = getInstrumentState();
+          const column = header.dataset.sort;
+          if (settings.sort_by === column) {
+            settings.sort_dir = settings.sort_dir === "asc" ? "desc" : "asc";
+          } else {
+            settings.sort_by = column;
+            settings.sort_dir = "asc";
+          }
+          settings.offset = 0;
+          document.getElementById("filterSortSelect").value = settings.sort_by;
+          loadInstrument();
+        });
+      });
+    }
+
+    function readInstrumentControlsIntoState() {
+      const settings = getInstrumentState();
+      settings.sample_id = document.getElementById("filterSampleInput").value.trim();
+      settings.treatment = document.getElementById("filterTreatmentSelect").disabled ? "" : document.getElementById("filterTreatmentSelect").value;
+      settings.source_sheet = document.getElementById("filterSourceSelect").disabled ? "" : document.getElementById("filterSourceSelect").value;
+      settings.limit = document.getElementById("filterLimitSelect").value;
+      settings.sort_by = document.getElementById("filterSortSelect").value;
+      settings.offset = 0;
+    }
+
+    function resetInstrumentFilters() {
+      const settings = getInstrumentState();
+      settings.sample_id = "";
+      settings.treatment = "";
+      settings.source_sheet = "";
+      settings.limit = "25";
+      settings.offset = 0;
+      settings.sort_by = "";
+      settings.sort_dir = "asc";
+      loadInstrument();
+    }
+
+    function changeInstrumentPage(direction) {
+      const settings = getInstrumentState();
+      if (settings.limit === "all") return;
+      const pageSize = Number(settings.limit);
+      const nextOffset = settings.offset + direction * pageSize;
+      if (nextOffset < 0) return;
+      settings.offset = nextOffset;
+      loadInstrument();
+    }
+
+    function downloadInstrumentCsv() {
+      readInstrumentControlsIntoState();
+      const params = buildInstrumentParams(true);
+      window.location = `/api/download?${params.toString()}`;
+    }
+
+    function buildCompareRows() {
+      const rows = [...state.compareRows];
+      switch (state.compareRanking) {
+        case "support_high":
+          return rows.sort((a, b) => Number(b.support_total) - Number(a.support_total));
+        case "ofda_high":
+          return rows.sort((a, b) => Number(b.ofda_mean) - Number(a.ofda_mean));
+        case "cottonscope_high":
+          return rows.sort((a, b) => Number(b.cottonscope_mean) - Number(a.cottonscope_mean));
+        case "abs_fit_residual":
+        default:
+          return rows.sort((a, b) => Number(b.abs_fit_residual) - Number(a.abs_fit_residual));
+      }
+    }
+
+    function renderCompareDetail(row) {
+      const root = document.getElementById("compareDetailPanel");
+      if (!row) {
+        root.innerHTML = `<div class="empty-state small">Select a matched sample to review fit position, predicted response, and within-sample spread.</div>`;
+        return;
+      }
+
+      const reliability = row.ofda_std || row.cottonscope_std
+        ? `Within-sample standard deviation is ${formatNumber(row.ofda_std)} for OFDA and ${formatNumber(row.cottonscope_std)} for Cottonscope, which helps show whether this matched sample is supported by stable replicate behavior.`
+        : "Within-sample spread is minimal or not available for at least one instrument, so interpretation should lean more heavily on fitted-position context and matched support.";
+      const predictedCopy = row.predicted_cottonscope !== ""
+        ? `At this OFDA level, the fitted model predicts a Cottonscope mean of ${formatNumber(row.predicted_cottonscope)} um. This sample currently sits ${String(row.fit_position || "near the fit line").toLowerCase()}.`
+        : "A fitted prediction is not available for this sample because the matched cohort is too limited to estimate a stable regression line.";
+      const fitStrength = state.compareModel?.r_squared !== null && state.compareModel?.r_squared !== undefined && state.compareModel?.r_squared !== ""
+        ? `Overall comparison strength is ${getRegressionStrengthLabel(state.compareModel.r_squared).toLowerCase()} with R^2 = ${formatNumber(state.compareModel.r_squared, 3)}.`
+        : "Overall fit strength is not available for the current matched cohort.";
+
+      root.innerHTML = `
+        <div class="summary-card">
+          <h4>${escapeHtml(row.sample_id)}</h4>
+          <div class="support-copy">${escapeHtml(predictedCopy)}</div>
+        </div>
+        <div class="summary-card">
+          <h4>Analytical interpretation</h4>
+          <div class="support-copy">${formatDisplayText(fitStrength)} ${escapeHtml(reliability)}</div>
+        </div>
+        <div class="detail-metric-grid">
+          <div class="detail-metric">
+            <div class="detail-metric-label">OFDA mean</div>
+            <div class="detail-metric-value">${escapeHtml(formatNumber(row.ofda_mean))}</div>
+          </div>
+          <div class="detail-metric">
+            <div class="detail-metric-label">Cottonscope mean</div>
+            <div class="detail-metric-value">${escapeHtml(formatNumber(row.cottonscope_mean))}</div>
+          </div>
+          <div class="detail-metric">
+            <div class="detail-metric-label">Predicted Cottonscope</div>
+            <div class="detail-metric-value">${escapeHtml(formatNumber(row.predicted_cottonscope))}</div>
+          </div>
+          <div class="detail-metric">
+            <div class="detail-metric-label">Fit position</div>
+            <div class="detail-metric-value">${escapeHtml(row.fit_position || "Fit unavailable")}</div>
+          </div>
+          <div class="detail-metric">
+            <div class="detail-metric-label">Matched observations</div>
+            <div class="detail-metric-value">${escapeHtml(formatNumber(row.ofda_n, 0))} / ${escapeHtml(formatNumber(row.cottonscope_n, 0))}</div>
+          </div>
+          <div class="detail-metric">
+            <div class="detail-metric-label">OFDA std dev</div>
+            <div class="detail-metric-value">${escapeHtml(formatNumber(row.ofda_std))}</div>
+          </div>
+          <div class="detail-metric">
+            <div class="detail-metric-label">Cottonscope std dev</div>
+            <div class="detail-metric-value">${escapeHtml(formatNumber(row.cottonscope_std))}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCompareTable(rows) {
+      renderGenericTable("compareTableWrap", rows, ["sample_id", "ofda_mean", "cottonscope_mean", "predicted_cottonscope", "fit_position", "support_total"], {
+        labels: {
+          sample_id: "Sample ID",
+          ofda_mean: "OFDA mean",
+          cottonscope_mean: "Cottonscope mean",
+          predicted_cottonscope: "Predicted Cottonscope",
+          fit_position: "Fit position",
+          support_total: "Total support",
+        },
+        rowAttr: (row) => `data-sample-id="${escapeHtml(row.sample_id)}" class="${state.compareSelectedSample === row.sample_id ? "is-selected" : ""}"`,
+        emptyMessage: "No matched OFDA and Cottonscope samples are available for the current comparison settings. Check the search term or confirm that shared sample IDs exist in both datasets.",
+      });
+
+      document.querySelectorAll("#compareTableWrap tbody tr[data-sample-id]").forEach((rowNode) => {
+        rowNode.addEventListener("click", () => {
+          state.compareSelectedSample = rowNode.dataset.sampleId;
+          const selected = rows.find((row) => row.sample_id === state.compareSelectedSample);
+          renderCompareDetail(selected);
+          renderCompareTable(rows);
+        });
+      });
+    }
+
+    function renderCompareFitPanel(rows) {
+      const root = document.getElementById("compareFitPanel");
+      if (!rows.length) {
+        root.innerHTML = `<div class="empty-state small">No matched samples are available yet, so regression fit metrics cannot be summarized.</div>`;
+        return;
+      }
+
+      const model = state.compareModel || {};
+      const strongestOutlier = [...rows]
+        .sort((a, b) => Number(b.abs_fit_residual) - Number(a.abs_fit_residual))[0];
+      const avgSupport = rows.reduce((sum, row) => sum + Number(row.support_total || 0), 0) / rows.length;
+      const equation = model.slope !== null && model.slope !== undefined && model.slope !== ""
+        ? `Cottonscope = ${formatNumber(model.slope, 4)} × OFDA + ${formatNumber(model.intercept, 4)}`
+        : "Fit unavailable for the current matched cohort";
+      const fitNarrative = model.r_squared !== null && model.r_squared !== undefined && model.r_squared !== ""
+        ? `${getRegressionStrengthLabel(model.r_squared)}. R^2 indicates how much of the Cottonscope variation is explained by the OFDA means in the matched set.`
+        : "A stable fitted relationship could not be estimated from the current matched set.";
+
+      root.innerHTML = `
+        <div class="summary-card">
+          <h4>${escapeHtml(getRegressionStrengthLabel(model.r_squared))}</h4>
+          <div class="fit-copy">${formatDisplayText(fitNarrative)}</div>
+        </div>
+        <div class="fit-stats-grid">
+          <div class="fit-stat">
+            <div class="fit-stat-label">R<sup>2</sup></div>
+            <div class="fit-stat-value">${escapeHtml(formatNumber(model.r_squared, 3))}</div>
+          </div>
+          <div class="fit-stat">
+            <div class="fit-stat-label">Correlation</div>
+            <div class="fit-stat-value">${escapeHtml(formatNumber(model.correlation, 3))}</div>
+          </div>
+          <div class="fit-stat">
+            <div class="fit-stat-label">Slope</div>
+            <div class="fit-stat-value">${escapeHtml(formatNumber(model.slope, 4))}</div>
+          </div>
+          <div class="fit-stat">
+            <div class="fit-stat-label">Avg support</div>
+            <div class="fit-stat-value">${escapeHtml(formatNumber(avgSupport))}</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <h4>Regression equation</h4>
+          <div class="fit-copy">${escapeHtml(equation)}</div>
+        </div>
+        <div class="guide-item">
+          <strong>Sample to inspect next</strong>
+          ${strongestOutlier ? `${escapeHtml(strongestOutlier.sample_id)} currently sits farthest from the fitted relationship in the matched set.` : "No matched samples are available for prioritization."}
+        </div>
+      `;
+    }
+
+    function renderCompareAtGlance(rows) {
+      const root = document.getElementById("compareAtGlance");
+      if (!rows.length) {
+        root.innerHTML = `
+          <div class="fit-stat">
+            <div class="fit-stat-label">R<sup>2</sup></div>
+            <div class="fit-stat-value">-</div>
+          </div>
+          <div class="fit-stat">
+            <div class="fit-stat-label">Matched samples</div>
+            <div class="fit-stat-value">0</div>
+          </div>
+          <div class="fit-stat">
+            <div class="fit-stat-label">Fit strength</div>
+            <div class="fit-stat-value">Unavailable</div>
+          </div>
+          <div class="fit-stat">
+            <div class="fit-stat-label">Avg support</div>
+            <div class="fit-stat-value">-</div>
+          </div>
+        `;
+        return;
+      }
+
+      const model = state.compareModel || {};
+      const avgSupport = rows.reduce((sum, row) => sum + Number(row.support_total || 0), 0) / rows.length;
+      root.innerHTML = `
+        <div class="fit-stat">
+          <div class="fit-stat-label">R<sup>2</sup></div>
+          <div class="fit-stat-value">${escapeHtml(formatNumber(model.r_squared, 3))}</div>
+        </div>
+        <div class="fit-stat">
+          <div class="fit-stat-label">Matched samples</div>
+          <div class="fit-stat-value">${escapeHtml(formatNumber(rows.length, 0))}</div>
+        </div>
+        <div class="fit-stat">
+          <div class="fit-stat-label">Fit strength</div>
+          <div class="fit-stat-value">${escapeHtml(getRegressionStrengthLabel(model.r_squared))}</div>
+        </div>
+        <div class="fit-stat">
+          <div class="fit-stat-label">Avg support</div>
+          <div class="fit-stat-value">${escapeHtml(formatNumber(avgSupport))}</div>
+        </div>
+      `;
+    }
+
+    function populateCompareSampleList(rows) {
+      const datalist = document.getElementById("compareSampleList");
+      const sampleIds = [...new Set(rows.map((row) => row.sample_id).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      datalist.innerHTML = sampleIds.map((sampleId) => `<option value="${escapeHtml(sampleId)}"></option>`).join("");
+    }
+
+    function renderCompareCharts(rows) {
+      const points = rows.map((row) => ({
+        x: Number(row.ofda_mean),
+        y: Number(row.cottonscope_mean),
+        sample: row.sample_id,
+      })).filter((point) => !Number.isNaN(point.x) && !Number.isNaN(point.y));
+      const tickColor = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+      const lineData = [];
+
+      if (points.length > 1 && state.compareModel?.slope !== null && state.compareModel?.slope !== undefined && state.compareModel?.slope !== "") {
+        const xValues = points.map((point) => point.x);
+        const minX = Math.min(...xValues);
+        const maxX = Math.max(...xValues);
+        lineData.push(
+          { x: minX, y: Number(state.compareModel.slope) * minX + Number(state.compareModel.intercept || 0) },
+          { x: maxX, y: Number(state.compareModel.slope) * maxX + Number(state.compareModel.intercept || 0) }
+        );
+      }
+
+      makeChart("compareScatterChart", {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Matched sample",
+              data: points,
+              backgroundColor: "rgba(90, 22, 24, 0.74)",
+              pointRadius: 6,
+            },
+            ...(lineData.length ? [{
+              type: "line",
+              label: "Fitted relationship",
+              data: lineData,
+              borderColor: "rgba(215, 177, 90, 0.92)",
+              backgroundColor: "rgba(215, 177, 90, 0.92)",
+              pointRadius: 0,
+              borderWidth: 2.5,
+              tension: 0,
+            }] : []),
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: tickColor,
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  if (context.dataset.type === "line") {
+                    return `Fitted line`;
+                  }
+                  return `${context.raw.sample}: OFDA ${formatNumber(context.raw.x)}, Cottonscope ${formatNumber(context.raw.y)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              title: { display: true, text: "OFDA mean diameter (um)" },
+              ticks: { color: tickColor },
+              grid: { color: "rgba(125,125,125,0.1)" },
+            },
+            y: {
+              title: { display: true, text: "Cottonscope mean width (um)" },
+              ticks: { color: tickColor },
+              grid: { color: "rgba(125,125,125,0.1)" },
+            },
+          },
+        },
+      });
+      destroyChart("compareDeltaChart");
+    }
+
+    async function loadCompare() {
+      try {
+        const params = new URLSearchParams();
+        if (state.compareSearch) params.set("sample_id", state.compareSearch);
+        const payload = await fetchJson(`/api/compare/ofda-cottonscope?${params.toString()}`);
+        state.compareRows = payload.rows || [];
+        state.compareModel = payload.regression || null;
+        const rankedRows = buildCompareRows();
+        populateCompareSampleList(payload.rows || []);
+        const avgSupport = rankedRows.length
+          ? rankedRows.reduce((sum, row) => sum + Number(row.support_total || 0), 0) / rankedRows.length
+          : 0;
+        document.getElementById("compareKpis").innerHTML = createKpiMarkup([
+          ...(payload.summary || []).map((card) => ({
+            label: card.label,
+            value: card.value,
+            note: card.label === "R^2"
+              ? "Higher values mean the Cottonscope means are explained more consistently by the matched OFDA means."
+              : "",
+          })),
+          { label: "Avg matched support", value: avgSupport, note: "Combined OFDA and Cottonscope observation count per matched sample, on average." },
+        ]);
+
+        if (!state.compareSelectedSample && rankedRows.length) {
+          state.compareSelectedSample = rankedRows[0].sample_id;
+        }
+        if (rankedRows.length && !rankedRows.some((row) => row.sample_id === state.compareSelectedSample)) {
+          state.compareSelectedSample = rankedRows[0].sample_id;
+        }
+        if (!rankedRows.length) {
+          state.compareSelectedSample = "";
+        }
+
+        renderCompareAtGlance(rankedRows);
+        renderCompareCharts(rankedRows);
+        renderCompareFitPanel(rankedRows);
+        renderCompareTable(rankedRows);
+        renderCompareDetail(rankedRows.find((row) => row.sample_id === state.compareSelectedSample));
+        setLastUpdated();
+      } catch (error) {
+        document.getElementById("compareAtGlance").innerHTML = `<div class="empty-state small">${escapeHtml(error.message)}</div>`;
+        document.getElementById("compareKpis").innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function buildCsv(rows) {
+      if (!rows.length) return "";
+      const columns = Object.keys(rows[0]);
+      const lines = [columns.join(",")];
+      rows.forEach((row) => {
+        const values = columns.map((column) => {
+          const raw = row[column] ?? "";
+          const value = String(raw).replaceAll('"', '""');
+          return `"${value}"`;
+        });
+        lines.push(values.join(","));
+      });
+      return lines.join("\n");
+    }
+
+    function triggerDownload(filename, content) {
+      const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function loadHistory() {
+      try {
+        const payload = await fetchJson("/api/uploads/history");
+        state.historyRows = payload.rows || [];
+        const totalRows = state.historyRows.reduce((sum, row) => sum + Number(row.row_count || 0), 0);
+        const latest = state.historyRows[0];
+
+        document.getElementById("historyKpis").innerHTML = createKpiMarkup([
+          { label: "Visible ingest events", value: state.historyRows.length, note: "Most recent workbook and sheet loads retained in the portal audit log." },
+          { label: "Rows represented", value: totalRows, note: "Cumulative row count represented by the visible ingest entries." },
+          { label: "Latest workbook", value: latest?.file_name || "No workbook ingested yet", note: latest ? `Loaded on ${formatDate(latest.ingested_at)}.` : "Upload a workbook to establish the ingest history." },
+          { label: "Latest sheet", value: latest?.sheet_name || "-", note: latest ? `${formatNumber(latest.row_count, 0)} rows were appended from this sheet.` : "" },
+        ]);
+
+        renderTimeline("historyTimeline", state.historyRows.slice(0, 6), "No ingest events are available yet. Upload a workbook to begin the activity record.");
+        renderSidebarLatestIngest(state.historyRows);
+        renderGenericTable("historyTableWrap", state.historyRows, ["file_name", "sheet_name", "row_count", "ingested_at", "sha256"], {
+          labels: {
+            file_name: "File name",
+            sheet_name: "Sheet name",
+            row_count: "Row count",
+            ingested_at: "Ingested at",
+            sha256: "SHA256",
+          },
+          emptyMessage: "No ingest history is available yet. Upload a workbook to generate the first audit log entry.",
+        });
+        renderLatestUploadImpact();
+        setLastUpdated();
+      } catch (error) {
+        document.getElementById("historyKpis").innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    function renderLatestUploadImpact() {
+      const root = document.getElementById("historyLatestImpact");
+      if (!state.lastUpload) {
+        root.innerHTML = `No workbook has been uploaded during this session yet. Use the global Upload Data action in the sidebar to capture the next ingest event and its analytical impact here.`;
+        return;
+      }
+
+      const detected = (state.lastUpload.detected_instruments || []).length
+        ? state.lastUpload.detected_instruments.map((item) => titleCase(item)).join(", ")
+        : titleCase(state.lastUpload.preview?.workbook_type || "unknown");
+
+      root.innerHTML = `
+        <div class="summary-card">
+          <h4>${escapeHtml(state.lastUpload.result.file_name)}</h4>
+          <div class="support-copy">Detected workbook content: ${escapeHtml(detected)}. Portal summaries and derived analytics were refreshed on ${escapeHtml(formatDate(state.lastUpload.updated_at))}.</div>
+        </div>
+        <div class="impact-grid">
+          ${Object.entries(state.lastUpload.impact || {}).map(([instrument, impact]) => `
+            <div class="impact-card">
+              <h4>${escapeHtml(titleCase(instrument))}</h4>
+              <p>${escapeHtml(formatNumber(impact.rows_added, 0))} rows appended to the study table<br />${escapeHtml(formatNumber(impact.samples_added, 0))} newly observed samples added</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderUploadStages(statusMap = {}) {
+      document.getElementById("uploadStages").innerHTML = uploadStages.map((stage) => `
+        <div class="upload-stage ${statusMap[stage.key] || ""}">
+          <div class="upload-stage-dot"></div>
+          <div>
+            <div class="upload-stage-title">${escapeHtml(stage.title)}</div>
+            <div class="timeline-meta">${escapeHtml(stage.copy)}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openUploadModal() {
+      const backdrop = document.getElementById("uploadModalBackdrop");
+      backdrop.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeUploadModal() {
+      const backdrop = document.getElementById("uploadModalBackdrop");
+      backdrop.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    function renderUploadSummary(payload) {
+      if (!payload) {
+        document.getElementById("uploadSummary").innerHTML = `<div class="empty-state small">No workbook has been processed in this session yet. Once a file is ingested, this panel will summarize its effect on the database and dashboards.</div>`;
+        return;
+      }
+
+      const detected = (payload.detected_instruments || []).length
+        ? payload.detected_instruments.map((item) => titleCase(item)).join(", ")
+        : titleCase(payload.preview?.workbook_type || "unknown");
+
+      document.getElementById("uploadSummary").innerHTML = `
+        <div class="summary-card">
+          <h4>${escapeHtml(payload.result.file_name)}</h4>
+          <div class="support-copy">Detected workbook content: ${escapeHtml(detected)}. Analytics and comparison outputs were refreshed on ${escapeHtml(formatDate(payload.updated_at))}.</div>
+        </div>
+        <div class="impact-grid">
+          ${Object.entries(payload.impact || {}).map(([instrument, impact]) => `
+            <div class="impact-card">
+              <h4>${escapeHtml(titleCase(instrument))}</h4>
+              <p>${escapeHtml(formatNumber(impact.rows_added, 0))} rows appended to the study table<br />${escapeHtml(formatNumber(impact.samples_added, 0))} newly observed samples added</p>
+            </div>
+          `).join("")}
+        </div>
+        <div class="summary-card">
+          <h4>Archive location</h4>
+          <div class="support-copy">Source workbook archived to ${escapeHtml(payload.archived_to)} for traceability and replay if needed.</div>
+        </div>
+      `;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function refreshAfterUpload() {
+      await Promise.all([
+        loadOverview(),
+        loadInstrument(),
+        loadCompare(),
+        loadHistory(),
+      ]);
+    }
+
+    async function uploadWorkbook(file) {
+      const extension = file.name.split(".").pop()?.toLowerCase();
+      if (!["xlsx", "xls"].includes(extension)) {
+        document.getElementById("uploadStatus").textContent = "Only Excel workbook files (.xlsx or .xls) can be ingested by this portal.";
+        renderUploadStages();
+        return;
+      }
+
+      openUploadModal();
+      document.getElementById("uploadStatus").textContent = `Preparing ${file.name} for validation and workbook inspection.`;
+      renderUploadStages({ validate: "active" });
+      await sleep(180);
+
+      const form = new FormData();
+      form.append("file", file);
+
+      try {
+        renderUploadStages({ validate: "done", detect: "active" });
+        document.getElementById("uploadStatus").textContent = "Inspecting workbook sheets and column structure to identify supported instrument data.";
+        await sleep(180);
+
+        renderUploadStages({ validate: "done", detect: "done", ingest: "active" });
+        document.getElementById("uploadStatus").textContent = "Loading validated records into PostgreSQL, recording the ingest event, and archiving the source workbook.";
+        const payload = await fetchJson("/api/upload", { method: "POST", body: form });
+
+        state.lastUpload = payload;
+        renderUploadSummary(payload);
+
+        renderUploadStages({ validate: "done", detect: "done", ingest: "done", refresh: "active" });
+        document.getElementById("uploadStatus").textContent = "Refreshing overview metrics, instrument workspaces, comparison outputs, and ingest history.";
+        await refreshAfterUpload();
+
+        renderUploadStages({ validate: "done", detect: "done", ingest: "done", refresh: "done" });
+        document.getElementById("uploadStatus").textContent = `Upload complete. ${payload.result.file_name} has been ingested successfully and the portal now reflects the updated dataset.`;
+        renderLatestUploadImpact();
+        setLastUpdated(payload.updated_at);
+      } catch (error) {
+        renderUploadStages({ validate: "done" });
+        document.getElementById("uploadStatus").textContent = error.message;
+      }
+    }
+
+    function attachUploadEvents() {
+      const openButtons = [
+        document.getElementById("openUploadButton"),
+        document.getElementById("overviewUploadAction"),
+      ];
+      openButtons.forEach((button) => button?.addEventListener("click", openUploadModal));
+      document.getElementById("closeUploadModal").addEventListener("click", closeUploadModal);
+
+      const backdrop = document.getElementById("uploadModalBackdrop");
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) {
+          closeUploadModal();
+        }
+      });
+
+      const dropzone = document.getElementById("uploadDropzone");
+      const input = document.getElementById("uploadInput");
+      const browseButton = document.getElementById("uploadBrowseButton");
+      renderUploadStages();
+      renderUploadSummary(null);
+
+      function openFilePicker() {
+        input.value = "";
+        input.click();
+      }
+
+      dropzone.addEventListener("click", openFilePicker);
+      browseButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openFilePicker();
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.add("dragging");
+        });
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.remove("dragging");
+        });
+      });
+
+      dropzone.addEventListener("drop", (event) => {
+        const file = event.dataTransfer.files?.[0];
+        if (file) uploadWorkbook(file);
+      });
+
+      input.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (file) uploadWorkbook(file);
+      });
+    }
+
+    function setInstrumentTab(tab) {
+      state.instrumentView = tab;
+      document.querySelectorAll("#instrumentTabs .segment-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === tab);
+      });
+      document.querySelectorAll("#instrumentPage .tab-view").forEach((panel) => panel.classList.remove("active"));
+      document.getElementById(`instrument${titleCase(tab).replace(" ", "")}Tab`).classList.add("active");
+    }
+
+    function bindStaticEvents() {
+      document.querySelectorAll(".nav-item").forEach((button) => {
+        button.addEventListener("click", () => {
+          const page = button.dataset.page;
+          const instrument = button.dataset.instrument;
+          setPage(page, instrument);
+        });
+      });
+
+      document.querySelectorAll("[data-nav-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+          setPage(button.dataset.navTarget, button.dataset.navInstrument || null);
+        });
+      });
+
+      document.getElementById("overviewGuideAction").addEventListener("click", () => setPage("guide"));
+      document.getElementById("overviewCompareAction").addEventListener("click", () => setPage("compare"));
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        const html = document.documentElement;
+        html.dataset.theme = html.dataset.theme === "dark" ? "light" : "dark";
+        syncThemeToggle();
+        if (state.page === "instrument") loadInstrument();
+        if (state.page === "compare") loadCompare();
+      });
+
+      document.getElementById("instrumentApplyButton").addEventListener("click", () => {
+        readInstrumentControlsIntoState();
+        loadInstrument();
+      });
+      document.getElementById("instrumentResetButton").addEventListener("click", resetInstrumentFilters);
+      document.getElementById("instrumentExportButton").addEventListener("click", downloadInstrumentCsv);
+      document.getElementById("instrumentPrevButton").addEventListener("click", () => changeInstrumentPage(-1));
+      document.getElementById("instrumentNextButton").addEventListener("click", () => changeInstrumentPage(1));
+
+      document.querySelectorAll("#instrumentTabs .segment-button").forEach((button) => {
+        button.addEventListener("click", () => setInstrumentTab(button.dataset.tab));
+      });
+
+      document.getElementById("compareRankingSelect").addEventListener("change", (event) => {
+        state.compareRanking = event.target.value;
+        loadCompare();
+      });
+      document.getElementById("compareApplyButton").addEventListener("click", () => {
+        state.compareSearch = document.getElementById("compareSearchInput").value.trim();
+        loadCompare();
+      });
+      document.getElementById("compareExportButton").addEventListener("click", () => {
+        const rows = buildCompareRows();
+        if (!rows.length) return;
+        triggerDownload("ofda_vs_cottonscope_comparison.csv", buildCsv(rows));
+      });
+    }
+
+    (async function init() {
+      attachUploadEvents();
+      bindStaticEvents();
+      renderPageHeader();
+      renderNav();
+      syncThemeToggle();
+      setInstrumentTab("table");
+      await Promise.all([loadOverview(), loadHistory(), loadCompare()]);
+    })();
+  </script>
+</body>
+</html>
